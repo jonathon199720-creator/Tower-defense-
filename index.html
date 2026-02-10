@@ -140,7 +140,7 @@ border-radius: 8px;
 padding: 20px;
 min-width: 280px;
 box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
-max-height: 700px;
+max-height: 800px;
 overflow-y: auto;
 }
 
@@ -342,12 +342,16 @@ z-index: 10;
   </div>
 
   <div class="sidebar">
-    <div class="stat-group">
-      <div class="stat-label">💰 Balance</div>
-      <div class="stat-value" id="moneyDisplay">$500</div>
+    <div class="stat-group" style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.6); padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+      <div style="font-size: 0.85em; color: #60a5fa; margin-bottom: 5px;">💡 TIP: Click any tower on the map to upgrade it!</div>
     </div>
 
 ```
+<div class="stat-group">
+  <div class="stat-label">💰 Balance</div>
+  <div class="stat-value" id="moneyDisplay">$500</div>
+</div>
+
 <div class="stat-group">
   <div class="stat-label">📊 Stats</div>
   <div class="stat-label" style="margin-top: 10px;">Wave</div>
@@ -363,10 +367,10 @@ z-index: 10;
   <div class="selected-tower">
     <div class="tower-name" id="selectedTowerName">-</div>
     <div class="tower-stat" id="selectedTowerStats"></div>
-    <button class="upgrade-btn" onclick="upgradeDamage()" id="upgradeDmgBtn">⬆ Upgrade Damage ($50)</button>
-    <button class="upgrade-btn" onclick="upgradeRange()" id="upgradeRngBtn">⬆ Upgrade Range ($50)</button>
-    <button class="upgrade-btn" onclick="upgradeFireRate()" id="upgradeFireBtn">⬆ Upgrade Speed ($50)</button>
-    <button class="upgrade-btn" onclick="sellTower()" style="background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #fca5a5;">💸 Sell ($)</button>
+    <button class="upgrade-btn" onclick="upgradeDamage()" id="upgradeDmgBtn">💪 Upgrade Damage ($50)</button>
+    <button class="upgrade-btn" onclick="upgradeRange()" id="upgradeRngBtn">📏 Upgrade Range ($50)</button>
+    <button class="upgrade-btn" onclick="upgradeFireRate()" id="upgradeFireBtn">⚡ Upgrade Speed ($50)</button>
+    <button class="upgrade-btn" onclick="sellTower()" style="background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #fca5a5;">💸 Sell Tower</button>
   </div>
 </div>
 
@@ -462,7 +466,7 @@ let currentPath = PATHS[0];
 
 // Enemy types with different speeds
 const ENEMY_TYPES = [
-  { name: "Scout", speedMult: 1.5, hpMult: 0.8, rewardMult: 0.8 },
+  { name: "Scout", speedMult: 1.1, hpMult: 0.8, rewardMult: 0.8 },
   { name: "Trooper", speedMult: 1.0, hpMult: 1.0, rewardMult: 1.0 },
   { name: "Tank", speedMult: 0.6, hpMult: 1.5, rewardMult: 1.3 }
 ];
