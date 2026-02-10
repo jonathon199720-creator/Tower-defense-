@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Epic Strategy Game Pro</title>
+  <style>
+    body { text-align:center; font-family: Arial; background:#111; color:#fff; }
+    canvas { background: #222; display:block; margin: 0 auto; border: 2px solid #555; }
+    button { margin:5px; padding:10px; font-size:16px; }
+    #abilities button { margin:2px; }
+  </style>
+</head>
+<body>
+  <h1>Epic Strategy Game Pro</h1>
+  <canvas id="gameCanvas" width="800" height="500"></canvas>
+  <div>
+    <button onclick="addTower('blue')">Add Blue Tower ($150)</button>
+    <button onclick="addTower('red')">Add Red Tower ($200)</button>
+    <button onclick="addTower('green')">Add Green Tower ($100)</button>
+  </div>
+  <div id="abilities">
+    <button onclick="useAbility('bomb')">Bomb ($300)</button>
+    <button onclick="useAbility('freeze')">Freeze ($250)</button>
+    <button onclick="useAbility('fire')">Fire ($200)</button>
+  </div>
+  <button onclick="nextWave()">Next Wave</button>
+  <p id="info"></p>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let money = 500;
+let level = 1;
+let wave = 1;
+let maxLevel = 100;
+let highScore = localStorage.getItem('highScore') || 0;
+let enemies = [];
+let towers = [];
+let abilitiesActive = [];
+
+// Tower definitions
+const towerTypes = {
+  blue: { damage: 15, range: 120, speed: 50, cost: 150 },
+  red: { damage: 30, range: 100, speed: 80, cost: 200 },
+  green: { damage: 8, range: 90, speed: 30, cost: 100 }
+};
+
+// Enemy types
+const enemyTypes = [
+  {name:'Grunt', hp:20, speed:1, color:'red'},
+  {name:'Runner', hp:15, speed:2, color:'yellow'},
+  {name:'Tank', hp:50, speed:0.5, color:'purple'},
+  {name:'Boss', hp:120, speed:1, color:'black'}
+];
+
+// Spawn enemies based on level/wave
+function spawnEnemies() {
+  enemies = [];
+  let numEnemies = 3 + Math.floor(level * 1.5) + wave;
+  for(let i=0; i<numEnemies; i++){
+    let typeIndex = Math.min(Math.floor(level/20), enemyTypes.length-1);
+    let eType = enemyTypes[typeIndex];
+    enemies.push({
+      x: Math.random()*700 + 50,
+      y: 0,
+      hp: eType.hp + level*5,
+      maxHp: eType.hp + level*5,
+      speed: eType.speed + level*0.05,
+      type: eType.name,
+      color: eType.color
+    });
+  }
+}
+
+// Add tower
+function addTower(color){
+  let tType = towerTypes[color];
+  if(money >= tType.cost){
+    towers.push({ x: Math.random()*700 + 50, y: 450, damage: tType.damage, range: tType.range, speed: tType.speed, lastShot: 0, color: color });
+    money -= tType.cost;
+    updateInfo();
+  }
+}
+
+// Upgrade tower
+function upgradeTower(tower, stat){
+  if(stat === 'damage'){ tower.damage += 5; }
+  else if(stat === 'range'){ tower.range += 10; }
+  else if(stat === 'speed'){ tower.speed -= 5; if(tower.speed < 5) tower.speed=5; }
+}
+
+// Special abilities
+function useAbility(type){
+  if(type==='bomb' && money>=300){ abilitiesActive.push({type:'bomb', duration:1}); money-=300; }
+  if(type==='freeze' && money>=250){ abilitiesActive.push({type:'freeze', duration:200}); money-=250; }
+  if(type==='fire' && money>=200){ abilitiesActive.push({type:'fire', duration:300}); money-=200; }
+}
+
+// Next wave
+function nextWave(){
+  wave++;
+  spawnEnemies();
+}
+
+// Draw
+function drawTower(t){
+  ctx.fillStyle = t.color;
+  ctx.beginPath();
+  ctx.arc(t.x, t.y, 20, 0, Math.PI*2);
+  ctx.fill();
+  // Optional: draw range
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.beginPath();
+  ctx.arc(t.x, t.y, t.range, 0, Math.PI*2);
+  ctx.stroke();
+}
+
+function drawEnemies(){
+  enemies.forEach((enemy,i) => {
+    enemy.y += enemy.speed;
+
+    // Check if enemy reached bottom
+    if(enemy.y > canvas.height){
+      enemies.splice(i,1);
+      money -= 50;
+    }
+
+    // Draw enemy
+    ctx.fillStyle = enemy.color;
+    ctx.fillRect(enemy.x-10, enemy.y-10, 20, 20);
+    ctx.fillStyle='white';
+    ctx.fillRect(enemy.x-10, enemy.y-15, 20*(enemy.hp/enemy.maxHp),3);
+
+    // Tower shooting
+    towers.forEach(t=>{
+      let dx = enemy.x - t.x;
+      let dy = enemy.y - t.y;
+      let dist = Math.sqrt(dx*dx + dy*dy);
+      if(dist < t.range && t.lastShot % t.speed === 0){
+        let damage = t.damage;
+        // Apply fire ability
+        if(abilitiesActive.some(a=>a.type==='fire')) damage += 2;
+        enemy.hp -= damage;
+      }
+      t.lastShot++;
+    });
+
+    // Remove dead enemies
+    if(enemy.hp <= 0){
+      enemies.splice(i,1);
+      money += 20 + Math.floor(level*2);
+    }
+  });
+}
+
+// Apply abilities
+function applyAbilities(){
+  abilitiesActive.forEach((a,i)=>{
+    if(a.type==='freeze'){
+      enemies.forEach(e=>e.y -= 0.5); // slow down
+      a.duration--;
+      if(a.duration<=0) abilitiesActive.splice(i,1);
+    }
+    if(a.type==='bomb'){
+      enemies.forEach(e=>e.hp -= 50);
+      abilitiesActive.splice(i,1);
+    }
+  });
+}
+
+// Display info
+function updateInfo(){
+  document.getElementById('info').innerText = 
+    `Money: $${money} | Level: ${level}/${maxLevel} | Wave: ${wave} | Towers: ${towers.length} | High Score: ${highScore}`;
+}
+
+// Main loop
+function gameLoop(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  towers.forEach(drawTower);
+  drawEnemies();
+  applyAbilities();
+
+  // Level up check
+  if(enemies.length===0 && wave%5===0){ level++; wave=0; spawnEnemies(); }
+
+  // High score save
+  if(level>highScore){ highScore=level; localStorage.setItem('highScore', highScore); }
+
+  requestAnimationFrame(gameLoop);
+}
+
+// Init
+spawnEnemies();
+updateInfo();
+gameLoop();
+
+</script>
+</body>
+</html>
