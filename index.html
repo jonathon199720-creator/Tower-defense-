@@ -391,6 +391,7 @@ opacity: 1;
     <button class="upgrade-btn" onclick="upgradeRange()" id="upgradeRngBtn">📏 Upgrade Range ($60)</button>
     <button class="upgrade-btn" onclick="upgradeFireRate()" id="upgradeFireBtn">⚡ Upgrade Speed ($70)</button>
     <button class="upgrade-btn" onclick="sellTower()" style="background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #fca5a5;">💸 Sell Tower</button>
+    <button class="upgrade-btn" onclick="closeTowerPanel()" style="background: linear-gradient(135deg, #6b7280, #4b5563); border-color: #9ca3af; margin-top: 10px;">◀ Back</button>
   </div>
 </div>
 
@@ -652,6 +653,11 @@ function selectTowerOnCanvas(tower) {
   document.getElementById("selectedTowerStats").innerHTML = `
     DMG: ${tower.damage} | Range: ${tower.range} | Speed: ${tower.fireRate}
   `;
+}
+
+function closeTowerPanel() {
+  selectedTower = null;
+  document.getElementById("selectedTowerPanel").style.display = "none";
 }
 
 function upgradeDamage() {
@@ -1019,7 +1025,7 @@ function update() {
   });
   ctx.globalAlpha = 1;
 
-  // Wave complete logic - only advance if few enemies escaped
+  // Wave complete logic - only restart if 3+ enemies escaped
   if (waveActive && enemies.length === 0) {
     if (enemiesEscaped <= 2) {
       waveActive = false;
@@ -1031,9 +1037,10 @@ function update() {
       document.getElementById("pauseOverlay").classList.remove("active");
       document.getElementById("pauseStatus").classList.remove("active");
       saveGame();
-      showMessage(`✨ Wave Complete! Level ${level}`, "#10b981");
+      const escapeMsg = enemiesEscaped > 0 ? ` (${enemiesEscaped} escaped)` : "";
+      showMessage(`✨ Wave Complete! Level ${level}${escapeMsg}`, "#10b981");
     } else if (enemiesEscaped > 2) {
-      // Too many escaped - restart wave
+      // 3+ enemies escaped - restart wave
       waveActive = false;
       enemiesEscaped = 0;
       document.getElementById("startBtn").disabled = false;
@@ -1041,7 +1048,7 @@ function update() {
       isPaused = false;
       document.getElementById("pauseOverlay").classList.remove("active");
       document.getElementById("pauseStatus").classList.remove("active");
-      showMessage("❌ Too many enemies escaped! Retrying wave...", "#ef4444");
+      showMessage("❌ 3+ enemies escaped! Retrying wave...", "#ef4444");
     }
   }
 
