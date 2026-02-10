@@ -25,7 +25,7 @@ overflow-x: hidden;
 
 h1 {
 font-size: 2.5em;
-margin-bottom: 10px;
+margin-bottom: 5px;
 text-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
 color: #c4b5fd;
 letter-spacing: 3px;
@@ -310,13 +310,32 @@ font-size: 0.8em;
 font-weight: bold;
 z-index: 10;
 }
+
+.save-indicator {
+position: absolute;
+bottom: 10px;
+right: 10px;
+background: rgba(16, 185, 129, 0.6);
+color: white;
+padding: 6px 10px;
+border-radius: 4px;
+font-size: 0.8em;
+font-weight: bold;
+z-index: 10;
+opacity: 0;
+transition: opacity 0.3s ease;
+}
+
+.save-indicator.active {
+opacity: 1;
+}
 </style>
 
 </head>
 
 <body>
 <h1>⚡ NEXUS DEFENSE ⚡</h1>
-<p class="subtitle">Strategic tower placement • Wave-based combat • Cyberpunk aesthetic</p>
+<p class="subtitle">Strategic tower placement • Wave-based combat • Auto-saving progress</p>
 
 <div class="container">
   <div class="game-area">
@@ -326,6 +345,7 @@ z-index: 10;
       <div class="wave-indicator" id="waveIndicator">Wave: 1</div>
       <div class="pause-status" id="pauseStatus">PAUSED</div>
       <div class="difficulty-badge" id="difficultyBadge">Normal</div>
+      <div class="save-indicator" id="saveIndicator">💾 Saved</div>
     </div>
 
 ```
@@ -343,7 +363,7 @@ z-index: 10;
 
   <div class="sidebar">
     <div class="stat-group" style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.6); padding: 10px; border-radius: 4px; margin-bottom: 15px;">
-      <div style="font-size: 0.85em; color: #60a5fa; margin-bottom: 5px;">💡 TIP: Click any tower on the map to upgrade it!</div>
+      <div style="font-size: 0.85em; color: #60a5fa; margin-bottom: 5px;">💡 Click towers to upgrade • Game auto-saves!</div>
     </div>
 
 ```
@@ -368,8 +388,8 @@ z-index: 10;
     <div class="tower-name" id="selectedTowerName">-</div>
     <div class="tower-stat" id="selectedTowerStats"></div>
     <button class="upgrade-btn" onclick="upgradeDamage()" id="upgradeDmgBtn">💪 Upgrade Damage ($50)</button>
-    <button class="upgrade-btn" onclick="upgradeRange()" id="upgradeRngBtn">📏 Upgrade Range ($50)</button>
-    <button class="upgrade-btn" onclick="upgradeFireRate()" id="upgradeFireBtn">⚡ Upgrade Speed ($50)</button>
+    <button class="upgrade-btn" onclick="upgradeRange()" id="upgradeRngBtn">📏 Upgrade Range ($60)</button>
+    <button class="upgrade-btn" onclick="upgradeFireRate()" id="upgradeFireBtn">⚡ Upgrade Speed ($70)</button>
     <button class="upgrade-btn" onclick="sellTower()" style="background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #fca5a5;">💸 Sell Tower</button>
   </div>
 </div>
@@ -410,6 +430,7 @@ let selectedTowerType = -1;
 let selectedTower = null;
 let isPaused = false;
 let totalKills = 0;
+let enemiesEscaped = 0;
 let gameRunning = true;
 
 const towers = [];
@@ -425,7 +446,7 @@ const TOWER_TYPES = [
 
 // Multiple paths for different waves
 const PATHS = [
-  // Wave 1-2
+  // Waves 1-2
   [
     { x: 450, y: -20 },
     { x: 450, y: 100 },
@@ -436,7 +457,7 @@ const PATHS = [
     { x: 100, y: 420 },
     { x: 100, y: 550 }
   ],
-  // Wave 3-4
+  // Waves 3-4
   [
     { x: 800, y: -20 },
     { x: 800, y: 150 },
@@ -447,7 +468,7 @@ const PATHS = [
     { x: 800, y: 350 },
     { x: 800, y: 550 }
   ],
-  // Wave 5+
+  // Waves 5+
   [
     { x: 100, y: -20 },
     { x: 100, y: 150 },
@@ -463,6 +484,7 @@ const PATHS = [
 ];
 
 let currentPath = PATHS[0];
+let lastPathIndex = 0;
 
 // Enemy types with different speeds
 const ENEMY_TYPES = [
@@ -470,6 +492,92 @@ const ENEMY_TYPES = [
   { name: "Trooper", speedMult: 1.0, hpMult: 1.0, rewardMult: 1.0 },
   { name: "Tank", speedMult: 0.6, hpMult: 1.5, rewardMult: 1.3 }
 ];
+
+// ========================
+// SAVE/LOAD SYSTEM
+// ========================
+function saveGame() {
+  const gameData = {
+    money,
+    level,
+    totalKills,
+    enemiesEscaped,
+    towers: towers.map(t => ({
+      x: t.x, y: t.y, type: t.type,
+      damageUpgrades: t.damageUpgrades,
+      rangeUpgrades: t.rangeUpgrades,
+      speedUpgrades: t.speedUpgrades,
+      baseCost: t.baseCost
+    }))
+  };
+  localStorage.setItem('nexusDefense', JSON.stringify(gameData));
+  
+  // Show save indicator
+  const saveInd = document.getElementById("saveIndicator");
+  saveInd.classList.add("active");
+  setTimeout(() => saveInd.classList.remove("active"), 2000);
+}
+
+function loadGame() {
+  const saved = localStorage.getItem('nexusDefense');
+  if (!saved) return false;
+  
+  try {
+    const gameData = JSON.parse(saved);
+    money = gameData.money;
+    level = gameData.level;
+    totalKills = gameData.totalKills;
+    enemiesEscaped = gameData.enemiesEscaped;
+    
+    // Recreate towers
+    towers.length = 0;
+    gameData.towers.forEach(tData => {
+      towers.push({
+        x: tData.x, y: tData.y, type: tData.type,
+        color: TOWER_TYPES[tData.type].color,
+        range: TOWER_TYPES[tData.type].range + (tData.rangeUpgrades * 20),
+        damage: TOWER_TYPES[tData.type].damage + (tData.damageUpgrades * 4),
+        fireRate: Math.max(10, TOWER_TYPES[tData.type].fireRate - (tData.speedUpgrades * 8)),
+        size: TOWER_TYPES[tData.type].size,
+        cooldown: 0,
+        target: null,
+        damageUpgrades: tData.damageUpgrades,
+        rangeUpgrades: tData.rangeUpgrades,
+        speedUpgrades: tData.speedUpgrades,
+        baseCost: tData.baseCost
+      });
+    });
+    
+    // Update path based on loaded level
+    updatePath();
+    
+    showMessage("📂 Game loaded!", "#3b82f6");
+    return true;
+  } catch (e) {
+    console.error("Load failed:", e);
+    return false;
+  }
+}
+
+function updatePath() {
+  const newPathIndex = level <= 2 ? 0 : level <= 4 ? 1 : 2;
+  if (newPathIndex !== lastPathIndex) {
+    // Path changed, reset towers and refund
+    if (towers.length > 0) {
+      let refundTotal = 0;
+      towers.forEach(t => {
+        refundTotal += t.baseCost * 0.6;
+      });
+      money += Math.floor(refundTotal);
+      towers.length = 0;
+      selectedTower = null;
+      document.getElementById("selectedTowerPanel").style.display = "none";
+      showMessage(`🔄 Path changed! Towers reset. +$${Math.floor(refundTotal)} refund`, "#fbbf24");
+    }
+    lastPathIndex = newPathIndex;
+  }
+  currentPath = PATHS[newPathIndex];
+}
 
 // ========================
 // UTILITY FUNCTIONS
@@ -519,6 +627,7 @@ function createTower(x, y, type) {
     speedUpgrades: 0,
     baseCost: t.cost
   });
+  saveGame();
 }
 
 function selectTower(type) {
@@ -547,37 +656,40 @@ function selectTowerOnCanvas(tower) {
 
 function upgradeDamage() {
   if (!selectedTower || money < 50) {
-    showMessage("💸 Insufficient funds!", "#ef4444");
+    showMessage("💸 Insufficient funds ($50)!", "#ef4444");
     return;
   }
   selectedTower.damage += 4;
   selectedTower.damageUpgrades++;
   money -= 50;
   selectTowerOnCanvas(selectedTower);
+  saveGame();
   showMessage("💪 Tower upgraded!", "#10b981");
 }
 
 function upgradeRange() {
-  if (!selectedTower || money < 50) {
-    showMessage("💸 Insufficient funds!", "#ef4444");
+  if (!selectedTower || money < 60) {
+    showMessage("💸 Insufficient funds ($60)!", "#ef4444");
     return;
   }
   selectedTower.range += 20;
   selectedTower.rangeUpgrades++;
-  money -= 50;
+  money -= 60;
   selectTowerOnCanvas(selectedTower);
+  saveGame();
   showMessage("📏 Range increased!", "#10b981");
 }
 
 function upgradeFireRate() {
-  if (!selectedTower || money < 50) {
-    showMessage("💸 Insufficient funds!", "#ef4444");
+  if (!selectedTower || money < 70) {
+    showMessage("💸 Insufficient funds ($70)!", "#ef4444");
     return;
   }
   selectedTower.fireRate = Math.max(10, selectedTower.fireRate - 8);
   selectedTower.speedUpgrades++;
-  money -= 50;
+  money -= 70;
   selectTowerOnCanvas(selectedTower);
+  saveGame();
   showMessage("⚡ Fire rate increased!", "#10b981");
 }
 
@@ -588,6 +700,7 @@ function sellTower() {
   towers.splice(towers.indexOf(selectedTower), 1);
   selectedTower = null;
   document.getElementById("selectedTowerPanel").style.display = "none";
+  saveGame();
   showMessage(`💰 Sold tower for $${Math.floor(refund)}`, "#fbbf24");
 }
 
@@ -675,16 +788,8 @@ canvas.addEventListener("click", (e) => {
 function startWave() {
   if (waveActive) return;
   waveActive = true;
+  enemiesEscaped = 0;
   document.getElementById("startBtn").disabled = true;
-  
-  // Update path based on level
-  if (level <= 2) {
-    currentPath = PATHS[0];
-  } else if (level <= 4) {
-    currentPath = PATHS[1];
-  } else {
-    currentPath = PATHS[2];
-  }
   
   let count = 0;
   const enemyCount = 5 + level * 2;
@@ -700,25 +805,30 @@ function startWave() {
 }
 
 function resetGame() {
-  money = 500;
-  level = 1;
-  totalKills = 0;
-  towers.length = 0;
-  enemies.length = 0;
-  waveActive = false;
-  placingTower = false;
-  selectedTowerType = -1;
-  selectedTower = null;
-  isPaused = false;
-  document.getElementById("startBtn").disabled = false;
-  document.getElementById("pauseBtn").textContent = "⏸ PAUSE";
-  document.getElementById("pauseOverlay").classList.remove("active");
-  document.getElementById("pauseStatus").classList.remove("active");
-  document.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
-  document.querySelectorAll(".tower-info").forEach(el => el.classList.remove("selected"));
-  document.getElementById("selectedTowerPanel").style.display = "none";
-  currentPath = PATHS[0];
-  showMessage("🔄 Game reset!", "#3b82f6");
+  if (confirm("Reset all progress?")) {
+    money = 500;
+    level = 1;
+    totalKills = 0;
+    enemiesEscaped = 0;
+    towers.length = 0;
+    enemies.length = 0;
+    waveActive = false;
+    placingTower = false;
+    selectedTowerType = -1;
+    selectedTower = null;
+    isPaused = false;
+    lastPathIndex = 0;
+    document.getElementById("startBtn").disabled = false;
+    document.getElementById("pauseBtn").textContent = "⏸ PAUSE";
+    document.getElementById("pauseOverlay").classList.remove("active");
+    document.getElementById("pauseStatus").classList.remove("active");
+    document.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
+    document.querySelectorAll(".tower-info").forEach(el => el.classList.remove("selected"));
+    document.getElementById("selectedTowerPanel").style.display = "none";
+    currentPath = PATHS[0];
+    localStorage.removeItem('nexusDefense');
+    showMessage("🔄 Game reset!", "#3b82f6");
+  }
 }
 
 // ========================
@@ -872,6 +982,7 @@ function update() {
       // Remove if escaped
       if (e.y > canvas.height) {
         enemies.splice(i, 1);
+        enemiesEscaped++;
         money = Math.max(0, money - 50);
         createParticles(e.x, e.y, "#ef4444", 10);
       }
@@ -908,16 +1019,30 @@ function update() {
   });
   ctx.globalAlpha = 1;
 
-  // Wave complete
-  if (waveActive && enemies.length === 0 && towers.length > 0) {
-    waveActive = false;
-    level++;
-    document.getElementById("startBtn").disabled = false;
-    document.getElementById("pauseBtn").textContent = "⏸ PAUSE";
-    isPaused = false;
-    document.getElementById("pauseOverlay").classList.remove("active");
-    document.getElementById("pauseStatus").classList.remove("active");
-    showMessage(`✨ Wave Complete! Level ${level}`, "#10b981");
+  // Wave complete logic - only advance if few enemies escaped
+  if (waveActive && enemies.length === 0) {
+    if (enemiesEscaped <= 2) {
+      waveActive = false;
+      level++;
+      updatePath();
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("pauseBtn").textContent = "⏸ PAUSE";
+      isPaused = false;
+      document.getElementById("pauseOverlay").classList.remove("active");
+      document.getElementById("pauseStatus").classList.remove("active");
+      saveGame();
+      showMessage(`✨ Wave Complete! Level ${level}`, "#10b981");
+    } else if (enemiesEscaped > 2) {
+      // Too many escaped - restart wave
+      waveActive = false;
+      enemiesEscaped = 0;
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("pauseBtn").textContent = "⏸ PAUSE";
+      isPaused = false;
+      document.getElementById("pauseOverlay").classList.remove("active");
+      document.getElementById("pauseStatus").classList.remove("active");
+      showMessage("❌ Too many enemies escaped! Retrying wave...", "#ef4444");
+    }
   }
 
   // Update UI
@@ -925,7 +1050,7 @@ function update() {
   document.getElementById("levelDisplay").textContent = level;
   document.getElementById("towersDisplay").textContent = towers.length;
   document.getElementById("killsDisplay").textContent = totalKills;
-  document.getElementById("waveIndicator").textContent = `Wave: ${level} | Enemies: ${enemies.length}`;
+  document.getElementById("waveIndicator").textContent = `Wave: ${level} | Enemies: ${enemies.length}${enemiesEscaped > 0 ? ` | Escaped: ${enemiesEscaped}` : ''}`;
   
   let difficulty = "Normal";
   if (level <= 3) difficulty = "Easy";
@@ -940,6 +1065,11 @@ function update() {
   });
 
   requestAnimationFrame(update);
+}
+
+// Load game on start
+if (!loadGame()) {
+  updatePath();
 }
 
 update();
