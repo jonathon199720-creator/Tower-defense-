@@ -563,11 +563,11 @@ function loadGame() {
 function updatePath() {
   const newPathIndex = level <= 2 ? 0 : level <= 4 ? 1 : 2;
   if (newPathIndex !== lastPathIndex) {
-    // Path changed, reset towers and refund
+    // Path changed, reset towers and refund 100%
     if (towers.length > 0) {
       let refundTotal = 0;
       towers.forEach(t => {
-        refundTotal += t.baseCost * 0.6;
+        refundTotal += t.baseCost;
       });
       money += Math.floor(refundTotal);
       towers.length = 0;
@@ -1030,7 +1030,6 @@ function update() {
     if (enemiesEscaped <= 2) {
       waveActive = false;
       level++;
-      updatePath();
       document.getElementById("startBtn").disabled = false;
       document.getElementById("pauseBtn").textContent = "⏸ PAUSE";
       isPaused = false;
@@ -1039,6 +1038,9 @@ function update() {
       saveGame();
       const escapeMsg = enemiesEscaped > 0 ? ` (${enemiesEscaped} escaped)` : "";
       showMessage(`✨ Wave Complete! Level ${level}${escapeMsg}`, "#10b981");
+      
+      // Update path AFTER wave complete so player sees new path before starting next wave
+      updatePath();
     } else if (enemiesEscaped > 2) {
       // 3+ enemies escaped - restart wave
       waveActive = false;
