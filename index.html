@@ -64,6 +64,20 @@ canvas {
 </div>
 
 <canvas id="game" width="360" height="540"></canvas>
+  <!-- UPGRADE PANEL -->
+<div id="upgradePanel" style="
+  display:none;
+  background:#0f172a;
+  padding:10px;
+  color:white;
+">
+  <h3>Upgrade Tower</h3>
+  <div id="towerStats"></div>
+  <button onclick="upgradeTower('damage')">Damage</button>
+  <button onclick="upgradeTower('range')">Range</button>
+  <button onclick="upgradeTower('rate')">Fire Rate</button>
+  <button onclick="closePanel()">Close</button>
+</div>
 
 <div id="panel"></div>
 
@@ -161,11 +175,14 @@ canvas.addEventListener("touchstart", e => {
   if (path.some(p=>p.x===x&&p.y===y)) return;
 
   towers.push({
-    type: placingType,
-    x,y,
-    level:1,
-    cooldown:0
-  });
+  type: placingType,
+  x, y,
+  cooldown: 0,
+
+  dmgLvl: 1,
+  rangeLvl: 1,
+  rateLvl: 1
+});
 
   gold -= towerStats[placingType].cost;
   placingType = null;
