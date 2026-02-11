@@ -433,6 +433,7 @@ let isPaused = false;
 let totalKills = 0;
 let enemiesEscaped = 0;
 let gameRunning = true;
+let waveHasSpawned = false;
 
 const towers = [];
 const enemies = [];
@@ -794,6 +795,7 @@ canvas.addEventListener("click", (e) => {
 function startWave() {
   if (waveActive) return;
   waveActive = true;
+  waveHasSpawned = false;
   enemiesEscaped = 0;
   document.getElementById("startBtn").disabled = true;
   
@@ -802,6 +804,7 @@ function startWave() {
   const spawnInterval = setInterval(() => {
     if (!isPaused) {
       spawnEnemy();
+      waveHasSpawned = true;
       count++;
     }
     if (count >= enemyCount) {
@@ -816,6 +819,7 @@ function resetGame() {
     level = 1;
     totalKills = 0;
     enemiesEscaped = 0;
+    waveHasSpawned = false;
     towers.length = 0;
     enemies.length = 0;
     waveActive = false;
@@ -1026,9 +1030,10 @@ function update() {
   ctx.globalAlpha = 1;
 
   // Wave complete logic - only restart if 3+ enemies escaped
-  if (waveActive && enemies.length === 0) {
+  if (waveActive && waveHasSpawned && enemies.length === 0) {
     if (enemiesEscaped <= 2) {
       waveActive = false;
+      waveHasSpawned = false;
       level++;
       document.getElementById("startBtn").disabled = false;
       document.getElementById("pauseBtn").textContent = "⏸ PAUSE";
@@ -1044,6 +1049,7 @@ function update() {
     } else if (enemiesEscaped > 2) {
       // 3+ enemies escaped - restart wave
       waveActive = false;
+      waveHasSpawned = false;
       enemiesEscaped = 0;
       document.getElementById("startBtn").disabled = false;
       document.getElementById("pauseBtn").textContent = "⏸ PAUSE";
