@@ -1084,7 +1084,8 @@ function update() {
 
 // Load game on start
 if (!loadGame()) {
-  updatePath();
+  // Fresh start - just set the initial path without triggering updates
+  currentPath = PATHS[0];
 }
 
 update();
