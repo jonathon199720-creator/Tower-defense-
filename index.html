@@ -12,7 +12,7 @@
   }
 
 body {
-background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f0f25 100%);
+background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 50%, #0f1a35 100%);
 color: #e0e7ff;
 font-family: ‘Courier New’, monospace;
 min-height: 100vh;
@@ -54,13 +54,13 @@ gap: 15px;
 }
 
 canvas {
-background: linear-gradient(45deg, #1a1f3a 0%, #252d4a 50%, #1f2640 100%);
-border: 2px solid #7c3aed;
+background: linear-gradient(45deg, #1a2a4a 0%, #254570 50%, #1f2d50 100%);
+border: 2px solid #3b82f6;
 border-radius: 8px;
 display: block;
 box-shadow:
-0 0 30px rgba(124, 58, 237, 0.4),
-inset 0 0 30px rgba(124, 58, 237, 0.1);
+0 0 30px rgba(59, 130, 246, 0.4),
+inset 0 0 30px rgba(59, 130, 246, 0.1);
 cursor: crosshair;
 position: relative;
 }
@@ -135,11 +135,11 @@ cursor: not-allowed;
 
 .sidebar {
 background: rgba(15, 23, 42, 0.8);
-border: 2px solid #7c3aed;
+border: 2px solid #3b82f6;
 border-radius: 8px;
 padding: 20px;
 min-width: 280px;
-box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
 max-height: 800px;
 overflow-y: auto;
 }
@@ -147,7 +147,7 @@ overflow-y: auto;
 .stat-group {
 margin-bottom: 20px;
 padding-bottom: 15px;
-border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+border-bottom: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .stat-group:last-child {
@@ -170,8 +170,8 @@ text-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
 }
 
 .tower-info {
-background: rgba(124, 58, 237, 0.1);
-border: 1px solid rgba(124, 58, 237, 0.5);
+background: rgba(59, 130, 246, 0.1);
+border: 1px solid rgba(59, 130, 246, 0.5);
 border-radius: 6px;
 padding: 12px;
 margin-bottom: 10px;
@@ -181,8 +181,8 @@ transition: all 0.3s ease;
 }
 
 .tower-info:hover {
-background: rgba(124, 58, 237, 0.2);
-border-color: rgba(124, 58, 237, 0.8);
+background: rgba(59, 130, 246, 0.2);
+border-color: rgba(59, 130, 246, 0.8);
 transform: translateX(5px);
 }
 
@@ -509,7 +509,8 @@ function saveGame() {
       damageUpgrades: t.damageUpgrades,
       rangeUpgrades: t.rangeUpgrades,
       speedUpgrades: t.speedUpgrades,
-      baseCost: t.baseCost
+      baseCost: t.baseCost,
+      baseLevel: t.baseLevel
     }))
   };
   localStorage.setItem('nexusDefense', JSON.stringify(gameData));
@@ -534,19 +535,26 @@ function loadGame() {
     // Recreate towers
     towers.length = 0;
     gameData.towers.forEach(tData => {
+      const baseLevel = tData.baseLevel || 1;
+      const scaleFactor = 1 + (Math.floor(baseLevel / 5) * 0.15);
+      const baseDamage = Math.floor(TOWER_TYPES[tData.type].damage * scaleFactor);
+      const baseRange = Math.floor(TOWER_TYPES[tData.type].range * scaleFactor);
+      const baseFireRate = Math.max(10, Math.floor(TOWER_TYPES[tData.type].fireRate / scaleFactor));
+      
       towers.push({
         x: tData.x, y: tData.y, type: tData.type,
         color: TOWER_TYPES[tData.type].color,
-        range: TOWER_TYPES[tData.type].range + (tData.rangeUpgrades * 20),
-        damage: TOWER_TYPES[tData.type].damage + (tData.damageUpgrades * 4),
-        fireRate: Math.max(10, TOWER_TYPES[tData.type].fireRate - (tData.speedUpgrades * 8)),
+        range: baseRange + (tData.rangeUpgrades * 20),
+        damage: baseDamage + (tData.damageUpgrades * 4),
+        fireRate: Math.max(10, baseFireRate - (tData.speedUpgrades * 8)),
         size: TOWER_TYPES[tData.type].size,
         cooldown: 0,
         target: null,
         damageUpgrades: tData.damageUpgrades,
         rangeUpgrades: tData.rangeUpgrades,
         speedUpgrades: tData.speedUpgrades,
-        baseCost: tData.baseCost
+        baseCost: tData.baseCost,
+        baseLevel: baseLevel
       });
     });
     
@@ -562,7 +570,7 @@ function loadGame() {
 }
 
 function updatePath() {
-  const newPathIndex = level <= 2 ? 0 : level <= 4 ? 1 : 2;
+  const newPathIndex = level <= 5 ? 0 : level <= 10 ? 1 : 2;
   if (newPathIndex !== lastPathIndex) {
     // Path changed, reset towers and refund 100%
     if (towers.length > 0) {
@@ -615,19 +623,25 @@ function togglePause() {
 // ========================
 function createTower(x, y, type) {
   const t = TOWER_TYPES[type];
+  
+  // Scale tower stats based on progression through game
+  // Every 5 levels, towers get slightly better
+  const scaleFactor = 1 + (Math.floor(level / 5) * 0.15);
+  
   towers.push({
     x, y, type,
     color: t.color,
-    range: t.range,
-    damage: t.damage,
-    fireRate: t.fireRate,
+    range: Math.floor(t.range * scaleFactor),
+    damage: Math.floor(t.damage * scaleFactor),
+    fireRate: Math.max(10, Math.floor(t.fireRate / scaleFactor)),
     size: t.size,
     cooldown: 0,
     target: null,
     damageUpgrades: 0,
     rangeUpgrades: 0,
     speedUpgrades: 0,
-    baseCost: t.cost
+    baseCost: t.cost,
+    baseLevel: level
   });
   saveGame();
 }
