@@ -569,7 +569,7 @@ touch-action: none;
 
 <body>
 <h1>⚡ NEXUS DEFENSE ⚡</h1>
-<p class="subtitle">Strategic tower placement • Boss battles every 15 waves • Tower defense & repair</p>
+<p class="subtitle">Strategic tower placement • Boss battles every 5 waves • Tower defense & repair</p>
 
 <div class="container">
   <div class="game-area">
@@ -599,7 +599,7 @@ touch-action: none;
 
   <div class="sidebar">
     <div class="stat-group" style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.6); padding: 10px; border-radius: 4px; margin-bottom: 15px;">
-      <div style="font-size: 0.85em; color: #60a5fa; margin-bottom: 5px;">💡 Click towers to repair or upgrade • Bosses every 15 waves!</div>
+      <div style="font-size: 0.85em; color: #60a5fa; margin-bottom: 5px;">💡 Click towers to repair or upgrade • Bosses every 5 waves!</div>
     </div>
 
 ```
@@ -820,7 +820,7 @@ function loadGame() {
     });
     
     updatePath();
-    isBossWave = (level % 15 === 0);
+    isBossWave = (level % 5 === 0);
     showMessage("📂 Game loaded!", "#3b82f6");
     return true;
   } catch (e) {
@@ -1106,7 +1106,7 @@ canvas.addEventListener("click", (e) => {
 function startWave() {
   if (waveActive) return;
   
-  isBossWave = (level % 15 === 0);
+  isBossWave = (level % 5 === 0);
   
   if (isBossWave && !bossWarningTriggered) {
     return;
