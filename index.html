@@ -2,20 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pixel Tower Defense</title>
+<title>Mobile Tower Defense</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
 <style>
 body {
   margin: 0;
   background: #0b1220;
-  color: #fff;
+  color: white;
   font-family: system-ui, sans-serif;
   text-align: center;
-}
-
-h1 {
-  margin: 10px 0;
 }
 
 #ui {
@@ -25,7 +21,6 @@ h1 {
   background: #111a30;
   position: sticky;
   top: 0;
-  z-index: 10;
 }
 
 button {
@@ -37,13 +32,9 @@ button {
   border-radius: 8px;
 }
 
-button:disabled {
-  background: #444;
-}
-
-#game {
+canvas {
   display: block;
-  margin: 0 auto;
+  margin: auto;
   background: #1a2440;
   touch-action: none;
 }
@@ -52,13 +43,13 @@ button:disabled {
 
 <body>
 
-<h1>Pixel Tower Defense</h1>
+<h2>Mobile Tower Defense</h2>
 
 <div id="ui">
   <div>❤️ <span id="lives">20</span></div>
   <div>💰 <span id="gold">100</span></div>
-  <div>Level <span id="level">1</span></div>
-  <button id="towerBtn">Add Tower (50)</button>
+  <div>Lvl <span id="level">1</span></div>
+  <button onclick="startPlacing()">Tower (50)</button>
 </div>
 
 <canvas id="game" width="360" height="540"></canvas>
@@ -67,109 +58,130 @@ button:disabled {
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-const towerImg = new Image();
-towerImg.src = "assets/tower.png";
-
-const enemyImg = new Image();
-enemyImg.src = "assets/enemy.png";
-
-const pathImg = new Image();
-pathImg.src = "assets/path.png";
+const TILE = 60;
+const COLS = 6;
+const ROWS = 9;
 
 let lives = 20;
 let gold = 100;
 let level = 1;
+let placing = false;
 
-const gridSize = 60;
-const cols = 6;
-const rows = 9;
+const towers = [];
+const enemies = [];
 
-let towers = [];
-let enemies = [];
-let placingTower = false;
+/* ======================
+   AUTO SPRITES
+====================== */
+function sprite(color) {
+  const c = document.createElement("canvas");
+  c.width = c.height = TILE;
+  const g = c.getContext("2d");
+  g.fillStyle = color;
+  g.fillRect(6, 6, TILE - 12, TILE - 12);
+  g.strokeStyle = "#fff";
+  g.lineWidth = 2;
+  g.strokeRect(6, 6, TILE - 12, TILE - 12);
+  return c;
+}
 
+const towerSprite = sprite("#3b82f6");
+const enemySprite = sprite("#ef4444");
+const pathSprite  = sprite("#374151");
+
+/* ======================
+   PATH
+====================== */
 const path = [
   {x:0,y:4},{x:1,y:4},{x:2,y:4},
   {x:3,y:4},{x:4,y:4},{x:5,y:4}
 ];
 
-document.getElementById("towerBtn").onclick = () => {
-  if (gold >= 50) placingTower = true;
-};
+/* ======================
+   INPUT
+====================== */
+function startPlacing() {
+  if (gold >= 50) placing = true;
+}
 
-canvas.addEventListener("touchstart", placeTower);
-
-function placeTower(e) {
-  if (!placingTower) return;
+canvas.addEventListener("touchstart", e => {
+  if (!placing) return;
 
   const rect = canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-
-  const x = Math.floor((touch.clientX - rect.left) / gridSize);
-  const y = Math.floor((touch.clientY - rect.top) / gridSize);
+  const t = e.touches[0];
+  const x = Math.floor((t.clientX - rect.left) / TILE);
+  const y = Math.floor((t.clientY - rect.top) / TILE);
 
   if (path.some(p => p.x === x && p.y === y)) return;
   if (towers.some(t => t.x === x && t.y === y)) return;
 
-  towers.push({x, y, cooldown: 0});
+  towers.push({ x, y, cooldown: 0 });
   gold -= 50;
-  placingTower = false;
+  placing = false;
   updateUI();
-}
+});
 
+/* ======================
+   ENEMIES
+====================== */
 function spawnEnemy() {
   enemies.push({
-    x: path[0].x * gridSize,
-    y: path[0].y * gridSize,
-    pathIndex: 0,
+    x: path[0].x * TILE,
+    y: path[0].y * TILE,
+    step: 0,
     hp: 10 + level * 2
   });
 }
 
+/* ======================
+   GAME LOOP
+====================== */
 function update() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  // draw path
+  // path
   path.forEach(p => {
-    ctx.drawImage(pathImg, p.x * gridSize, p.y * gridSize, gridSize, gridSize);
+    ctx.drawImage(pathSprite, p.x*TILE, p.y*TILE);
   });
 
   // towers
   towers.forEach(t => {
-    ctx.drawImage(towerImg, t.x * gridSize, t.y * gridSize, gridSize, gridSize);
+    ctx.drawImage(towerSprite, t.x*TILE, t.y*TILE);
     t.cooldown--;
   });
 
   // enemies
-  enemies.forEach((e, i) => {
-    const next = path[e.pathIndex + 1];
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    const e = enemies[i];
+    const next = path[e.step + 1];
+
     if (next) {
-      const tx = next.x * gridSize;
-      const ty = next.y * gridSize;
+      const tx = next.x * TILE;
+      const ty = next.y * TILE;
       const dx = tx - e.x;
       const dy = ty - e.y;
-      const dist = Math.hypot(dx, dy);
+      const d = Math.hypot(dx, dy);
 
-      e.x += dx / dist;
-      e.y += dy / dist;
-
-      if (dist < 2) e.pathIndex++;
+      e.x += dx / d;
+      e.y += dy / d;
+      if (d < 2) e.step++;
     } else {
       lives--;
       enemies.splice(i,1);
       updateUI();
+      continue;
     }
 
-    ctx.drawImage(enemyImg, e.x, e.y, gridSize, gridSize);
-  });
+    ctx.drawImage(enemySprite, e.x, e.y);
+  }
 
   // shooting
   towers.forEach(t => {
     if (t.cooldown > 0) return;
 
     enemies.forEach((e, i) => {
-      const dx = e.x - t.x * gridSize;
-      const dy = e.y - t.y * gridSize;
+      const dx = e.x - t.x*TILE;
+      const dy = e.y - t.y*TILE;
       if (Math.hypot(dx, dy) < 120) {
         e.hp -= 5;
         t.cooldown = 30;
@@ -185,21 +197,23 @@ function update() {
   requestAnimationFrame(update);
 }
 
+/* ======================
+   UI
+====================== */
 function updateUI() {
-  document.getElementById("lives").textContent = lives;
-  document.getElementById("gold").textContent = gold;
-  document.getElementById("level").textContent = level;
+  livesEl.textContent = lives;
+  goldEl.textContent = gold;
+  levelEl.textContent = level;
 }
 
-setInterval(() => {
-  spawnEnemy();
-}, Math.max(1200 - level * 50, 400));
+const livesEl = document.getElementById("lives");
+const goldEl = document.getElementById("gold");
+const levelEl = document.getElementById("level");
 
-setInterval(() => {
-  level++;
-  updateUI();
-}, 15000);
+setInterval(spawnEnemy, 1200);
+setInterval(() => { level++; updateUI(); }, 15000);
 
+updateUI();
 update();
 </script>
 
