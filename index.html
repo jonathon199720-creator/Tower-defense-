@@ -66,8 +66,9 @@ inset 0 0 30px rgba(59, 130, 246, 0.1);
 cursor: crosshair;
 position: relative;
 width: 100%;
-max-width: 900px;
+max-width: 100%;
 height: auto;
+image-rendering: crisp-edges;
 }
 
 canvas.boss-incoming {
@@ -663,23 +664,6 @@ touch-action: none;
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// Responsive canvas sizing
-function resizeCanvas() {
-  const container = canvas.parentElement;
-  const maxWidth = Math.min(window.innerWidth - 20, 900);
-  const aspectRatio = 900 / 500;
-  
-  canvas.width = maxWidth;
-  canvas.height = maxWidth / aspectRatio;
-  
-  // Store scale factor for click positioning
-  canvas.scaleX = canvas.width / 900;
-  canvas.scaleY = canvas.height / 500;
-}
-
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
-
 // Game state
 let money = 500;
 let level = 1;
@@ -1070,8 +1054,8 @@ function createParticles(x, y, color, count = 8) {
 canvas.addEventListener("click", (e) => {
   if (!placingTower || selectedTowerType === -1) {
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / canvas.scaleX;
-    const y = (e.clientY - rect.top) / canvas.scaleY;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
     
     for (const tower of towers) {
       if (distance(x, y, tower.x, tower.y) < 25) {
@@ -1083,8 +1067,8 @@ canvas.addEventListener("click", (e) => {
   }
   
   const rect = canvas.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / canvas.scaleX;
-  const y = (e.clientY - rect.top) / canvas.scaleY;
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
   
   const cost = TOWER_TYPES[selectedTowerType].cost;
   if (money >= cost) {
@@ -1231,11 +1215,31 @@ function update() {
         });
       }
 
-      // Draw tower
+      // Draw tower with better styling
+      // Draw base
       ctx.fillStyle = t.color;
       ctx.beginPath();
       ctx.arc(t.x, t.y, t.size, 0, Math.PI * 2);
       ctx.fill();
+      
+      // Draw tower highlight
+      ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.beginPath();
+      ctx.arc(t.x - t.size/3, t.y - t.size/3, t.size/3, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw tower type indicator
+      ctx.fillStyle = "white";
+      ctx.font = `bold ${t.size}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      if (t.type === 0) {
+        ctx.fillText("⚡", t.x, t.y);
+      } else if (t.type === 1) {
+        ctx.fillText("💣", t.x, t.y);
+      } else {
+        ctx.fillText("〰", t.x, t.y);
+      }
       
       // Draw health bar if damaged
       if (t.health < t.maxHealth) {
@@ -1320,20 +1324,53 @@ function update() {
 
       // Draw enemy
       if (e.isBoss) {
+        // Boss - bigger, more threatening
         ctx.fillStyle = "#ff1744";
         ctx.beginPath();
         ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = "#ffeb3b";
-        ctx.font = "bold 12px Arial";
+        
+        // Boss highlight
+        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.beginPath();
+        ctx.arc(e.x - e.radius/2, e.y - e.radius/2, e.radius/2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Boss crown
+        ctx.font = `bold ${e.radius + 8}px Arial`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("👑", e.x, e.y);
       } else {
-        ctx.fillStyle = e.type === 0 ? "#fbbf24" : e.type === 1 ? "#ef4444" : "#8b5cf6";
+        // Regular enemies with emoji
+        const colors = {
+          0: "#fbbf24", // Scout - yellow
+          1: "#ef4444", // Trooper - red
+          2: "#8b5cf6"  // Tank - purple
+        };
+        
+        ctx.fillStyle = colors[e.type];
         ctx.beginPath();
         ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
         ctx.fill();
+        
+        // Enemy highlight
+        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.beginPath();
+        ctx.arc(e.x - e.radius/2.5, e.y - e.radius/2.5, e.radius/2.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Enemy emoji indicator
+        ctx.font = `bold ${e.radius}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        if (e.type === 0) {
+          ctx.fillText("👾", e.x, e.y);
+        } else if (e.type === 1) {
+          ctx.fillText("🤖", e.x, e.y);
+        } else {
+          ctx.fillText("⚔", e.x, e.y);
+        }
       }
 
       // Draw glow
@@ -1380,11 +1417,20 @@ function update() {
 
   // Draw selected tower highlight
   if (selectedTower) {
+    // Pulsing selection glow
     ctx.strokeStyle = "#3b82f6";
     ctx.lineWidth = 3;
-    ctx.globalAlpha = 0.6;
+    ctx.globalAlpha = 0.8;
     ctx.beginPath();
     ctx.arc(selectedTower.x, selectedTower.y, selectedTower.size + 8, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Outer glow ring
+    ctx.strokeStyle = "rgba(59, 130, 246, 0.3)";
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.arc(selectedTower.x, selectedTower.y, selectedTower.size + 15, 0, Math.PI * 2);
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
