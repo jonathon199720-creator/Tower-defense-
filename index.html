@@ -1054,8 +1054,11 @@ function createParticles(x, y, color, count = 8) {
 canvas.addEventListener("click", (e) => {
   if (!placingTower || selectedTowerType === -1) {
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    // Scale click coordinates from displayed size to actual canvas resolution
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
     
     for (const tower of towers) {
       if (distance(x, y, tower.x, tower.y) < 25) {
@@ -1067,8 +1070,11 @@ canvas.addEventListener("click", (e) => {
   }
   
   const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+  // Scale click coordinates from displayed size to actual canvas resolution
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const x = (e.clientX - rect.left) * scaleX;
+  const y = (e.clientY - rect.top) * scaleY;
   
   const cost = TOWER_TYPES[selectedTowerType].cost;
   if (money >= cost) {
