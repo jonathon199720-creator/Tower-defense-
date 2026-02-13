@@ -1396,10 +1396,16 @@ function startWave() {
   const spawnInterval = setInterval(() => {
     if (!isPaused) {
       if (isBossThis && count === 0) {
-        spawnEnemy(true);
+        // Boss only spawns on path1
+        spawnEnemy(true, currentDualPath.path1);
       } else {
-        // Alternate between path1 and path2 for normal waves
-        const pathToUse = count % 2 === 0 ? currentDualPath.path1 : currentDualPath.path2;
+        // Path2 only comes in on higher waves (level 11+)
+        let pathToUse = currentDualPath.path1;
+        if (level >= 11) {
+          // On boss waves: alternate regular enemies between both paths
+          // On normal waves: alternate between both paths
+          pathToUse = count % 2 === 0 ? currentDualPath.path1 : currentDualPath.path2;
+        }
         spawnEnemy(false, pathToUse);
       }
       waveHasSpawned = true;
@@ -1478,14 +1484,16 @@ function update() {
   }
   ctx.stroke();
 
-  // Draw path 2
-  ctx.strokeStyle = "rgba(168, 85, 247, 0.4)";
-  ctx.beginPath();
-  ctx.moveTo(currentDualPath.path2[0].x, currentDualPath.path2[0].y);
-  for (let i = 1; i < currentDualPath.path2.length; i++) {
-    ctx.lineTo(currentDualPath.path2[i].x, currentDualPath.path2[i].y);
+  // Draw path 2 only on higher waves (level 11+)
+  if (level >= 11) {
+    ctx.strokeStyle = "rgba(168, 85, 247, 0.4)";
+    ctx.beginPath();
+    ctx.moveTo(currentDualPath.path2[0].x, currentDualPath.path2[0].y);
+    for (let i = 1; i < currentDualPath.path2.length; i++) {
+      ctx.lineTo(currentDualPath.path2[i].x, currentDualPath.path2[i].y);
+    }
+    ctx.stroke();
   }
-  ctx.stroke();
 
   // Draw path 1 nodes
   ctx.fillStyle = "rgba(59, 130, 246, 0.6)";
@@ -1495,13 +1503,15 @@ function update() {
     ctx.fill();
   });
 
-  // Draw path 2 nodes
-  ctx.fillStyle = "rgba(168, 85, 247, 0.6)";
-  currentDualPath.path2.forEach(point => {
-    ctx.beginPath();
-    ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
-    ctx.fill();
-  });
+  // Draw path 2 nodes only on higher waves (level 11+)
+  if (level >= 11) {
+    ctx.fillStyle = "rgba(168, 85, 247, 0.6)";
+    currentDualPath.path2.forEach(point => {
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
 
   // Boss warning check
   if (isBossWave && !bossWarningTriggered && !waveActive) {
@@ -1768,7 +1778,10 @@ function update() {
       waveActive = false;
       waveHasSpawned = false;
       level++;
-      bossWarningTriggered = false;
+      // Reset boss warning flag only when reaching a new boss level
+      if (level % 5 === 0) {
+        bossWarningTriggered = false;
+      }
       document.getElementById("startBtn").disabled = false;
       document.getElementById("pauseBtn").textContent = "⏸ PAUSE";
       isPaused = false;
