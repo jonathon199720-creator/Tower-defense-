@@ -443,6 +443,13 @@ background: linear-gradient(135deg, #fbbf24, #f59e0b);
 box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
 }
 
+.tower-button-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 4px;
+margin-top: 8px;
+}
+
 .message {
 position: fixed;
 top: 20px;
@@ -838,12 +845,14 @@ touch-action: none;
       <div class="tower-health-fill" id="selectedTowerHealth"></div>
     </div>
     <div class="tower-stat" id="selectedTowerHealthText">Health: 100/100</div>
-    <button class="upgrade-btn repair-btn" onclick="repairTower()" id="repairBtn">🔧 Repair ($40)</button>
-    <button class="upgrade-btn" onclick="upgradeDamage()" id="upgradeDmgBtn">💪 DMG ($50)</button>
-    <button class="upgrade-btn" onclick="upgradeRange()" id="upgradeRngBtn">📏 Range ($60)</button>
-    <button class="upgrade-btn" onclick="upgradeFireRate()" id="upgradeFireBtn">⚡ Speed ($70)</button>
-    <button class="upgrade-btn" onclick="sellTower()" style="background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #fca5a5;">💸 Sell</button>
-    <button class="upgrade-btn" onclick="closeTowerPanel()" style="background: linear-gradient(135deg, #6b7280, #4b5563); border-color: #9ca3af; margin-top: 8px;">◀ Back</button>
+    <div class="tower-button-grid">
+      <button class="upgrade-btn repair-btn" onclick="repairTower()" id="repairBtn">🔧 Repair ($40)</button>
+      <button class="upgrade-btn" onclick="upgradeDamage()" id="upgradeDmgBtn">💪 DMG ($50)</button>
+      <button class="upgrade-btn" onclick="upgradeRange()" id="upgradeRngBtn">📏 Range ($60)</button>
+      <button class="upgrade-btn" onclick="upgradeFireRate()" id="upgradeFireBtn">⚡ Speed ($70)</button>
+      <button class="upgrade-btn" onclick="sellTower()" style="background: linear-gradient(135deg, #ef4444, #dc2626); border-color: #fca5a5;">💸 Sell</button>
+      <button class="upgrade-btn" onclick="closeTowerPanel()" style="background: linear-gradient(135deg, #6b7280, #4b5563); border-color: #9ca3af;">◀ Back</button>
+    </div>
   </div>
   <div id="noTowerMessage" style="text-align: center; color: #60a5fa; padding: 20px; font-size: 0.8em;">
     Select a tower to manage
@@ -859,7 +868,7 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 // Game state
-let money = 500;
+let money = 800;
 let level = 1;
 let waveActive = false;
 let placingTower = false;
@@ -1233,7 +1242,7 @@ function spawnEnemy(isBoss = false) {
     type = ENEMY_TYPES[typeIndex];
   }
   
-  const baseHp = isBoss ? (150 + level * 40) : (50 + level * 20);
+  const baseHp = isBoss ? (120 + level * 35) : (38 + level * 17);
   const hp = baseHp * type.hpMult;
   
   enemies.push({
@@ -1330,7 +1339,7 @@ function startWave() {
   document.getElementById("startBtn").disabled = true;
   
   let count = 0;
-  const enemyCount = isBossWave ? 12 : (8 + Math.floor(level * 2.5));
+  const enemyCount = isBossWave ? 10 : (6 + Math.floor(level * 2.2));
   const isBossThis = isBossWave;
   
   const spawnInterval = setInterval(() => {
@@ -1351,7 +1360,7 @@ function startWave() {
 
 function resetGame() {
   if (confirm("Reset all progress?")) {
-    money = 500;
+    money = 800;
     level = 1;
     totalKills = 0;
     enemiesEscaped = 0;
@@ -1633,7 +1642,7 @@ function update() {
       if (e.y > canvas.height) {
         enemies.splice(i, 1);
         enemiesEscaped++;
-        const penalty = e.isBoss ? 800 : 100;
+        const penalty = e.isBoss ? 800 : 50;
         money = Math.max(0, money - penalty);
         if (e.isBoss) {
           showMessage(`👑 Boss escaped! -$${penalty}`, "#ef4444");
