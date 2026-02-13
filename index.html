@@ -485,22 +485,17 @@ transform: translateX(-50%) translateY(-20px);
 }
 
 .wave-indicator {
-position: absolute;
-top: 10px;
-left: 10px;
+position: static;
 background: rgba(59, 130, 246, 0.8);
 padding: 8px 12px;
 border-radius: 4px;
 font-size: 0.9em;
 font-weight: bold;
 text-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
-z-index: 10;
 }
 
 .pause-status {
-position: absolute;
-top: 10px;
-right: 10px;
+position: static;
 background: rgba(239, 68, 68, 0.8);
 color: white;
 padding: 8px 12px;
@@ -508,36 +503,45 @@ border-radius: 4px;
 font-size: 0.9em;
 font-weight: bold;
 display: none;
-z-index: 10;
 }
 
 .pause-status.active {
-display: block;
+display: inline-block;
 }
 
 .difficulty-badge {
-position: absolute;
-top: 50px;
-left: 10px;
+position: static;
 background: rgba(249, 115, 22, 0.8);
 padding: 6px 10px;
 border-radius: 4px;
 font-size: 0.8em;
 font-weight: bold;
-z-index: 10;
+}
+
+.boss-badge {
+position: static;
+background: rgba(239, 68, 68, 0.9);
+color: white;
+padding: 8px 12px;
+border-radius: 4px;
+font-size: 0.9em;
+font-weight: bold;
+display: none;
+animation: bossBadgePulse 0.6s infinite;
+}
+
+.boss-badge.active {
+display: inline-block;
 }
 
 .save-indicator {
-position: absolute;
-bottom: 10px;
-right: 10px;
+position: static;
 background: rgba(16, 185, 129, 0.6);
 color: white;
 padding: 6px 10px;
 border-radius: 4px;
 font-size: 0.8em;
 font-weight: bold;
-z-index: 10;
 opacity: 0;
 transition: opacity 0.3s ease;
 }
@@ -546,23 +550,15 @@ transition: opacity 0.3s ease;
 opacity: 1;
 }
 
-.boss-badge {
-position: absolute;
-top: 50px;
-right: 10px;
-background: rgba(239, 68, 68, 0.9);
-color: white;
-padding: 8px 12px;
-border-radius: 4px;
-font-size: 0.9em;
-font-weight: bold;
-z-index: 10;
-display: none;
-animation: bossBadgePulse 0.6s infinite;
-}
-
-.boss-badge.active {
-display: block;
+.game-info-panel {
+display: flex;
+gap: 10px;
+flex-wrap: wrap;
+justify-content: center;
+align-items: center;
+margin-top: 10px;
+width: 100%;
+max-width: 900px;
 }
 
 @keyframes bossBadgePulse {
@@ -759,14 +755,9 @@ touch-action: none;
 <div class="container">
   <div class="game-area">
     <div class="canvas-overlay">
-      <canvas id="game" width="900" height="500"></canvas>
+      <canvas id="game" width="900" height="600"></canvas>
       <div class="pause-overlay" id="pauseOverlay">⏸ PAUSED</div>
       <div class="boss-warning" id="bossWarning" style="display: none;">⚠ BOSS INCOMING ⚠</div>
-      <div class="wave-indicator" id="waveIndicator">Wave: 1</div>
-      <div class="pause-status" id="pauseStatus">PAUSED</div>
-      <div class="difficulty-badge" id="difficultyBadge">Normal</div>
-      <div class="boss-badge" id="bossBadge">👑 BOSS WAVE</div>
-      <div class="save-indicator" id="saveIndicator">💾 Saved</div>
     </div>
 
 ```
@@ -777,6 +768,14 @@ touch-action: none;
   <button id="pauseBtn" onclick="togglePause()">⏸ PAUSE</button>
   <button id="startBtn" onclick="startWave()">▶ WAVE</button>
   <button onclick="resetGame()" style="background: linear-gradient(135deg, #dc2626, #991b1b); border-color: #fca5a5;">🔄 RESET</button>
+</div>
+
+<div class="game-info-panel">
+  <div class="wave-indicator" id="waveIndicator">Wave: 1</div>
+  <div class="pause-status" id="pauseStatus">PAUSED</div>
+  <div class="difficulty-badge" id="difficultyBadge">Normal</div>
+  <div class="boss-badge" id="bossBadge">👑 BOSS WAVE</div>
+  <div class="save-indicator" id="saveIndicator">💾 Saved</div>
 </div>
 ```
 
@@ -904,7 +903,7 @@ const PATHS = [
     { x: 700, y: 280 },
     { x: 700, y: 420 },
     { x: 100, y: 420 },
-    { x: 100, y: 550 }
+    { x: 100, y: 650 }
   ],
   [
     { x: 800, y: -20 },
@@ -914,7 +913,7 @@ const PATHS = [
     { x: 100, y: 100 },
     { x: 100, y: 350 },
     { x: 800, y: 350 },
-    { x: 800, y: 550 }
+    { x: 800, y: 650 }
   ],
   [
     { x: 100, y: -20 },
@@ -926,7 +925,7 @@ const PATHS = [
     { x: 300, y: 300 },
     { x: 300, y: 450 },
     { x: 650, y: 450 },
-    { x: 650, y: 550 }
+    { x: 650, y: 650 }
   ]
 ];
 
@@ -1441,16 +1440,14 @@ function update() {
   if (!isPaused) {
     // Update and draw towers
     towers.forEach((t) => {
-      // Take damage from nearby enemies (after wave 15)
-      if (level >= 15) {
-        enemies.forEach(e => {
-          const dist = distance(t.x, t.y, e.x, e.y);
-          if (dist < 40) {
-            t.health -= e.damageDealtPerFrame;
-            if (t.health < 0) t.health = 0;
-          }
-        });
-      }
+      // Take damage from nearby enemies
+      enemies.forEach(e => {
+        const dist = distance(t.x, t.y, e.x, e.y);
+        if (dist < 40) {
+          t.health -= e.damageDealtPerFrame;
+          if (t.health < 0) t.health = 0;
+        }
+      });
 
       // Draw tower with better styling
       // Draw base
@@ -1708,9 +1705,8 @@ function update() {
       const escapeMsg = enemiesEscaped > 0 ? ` (${enemiesEscaped} escaped)` : "";
       showMessage(`✨ Wave Complete! Level ${level}${escapeMsg}`, "#10b981");
       
-      // Force clear towers every 5 waves if path update doesn't do it
-      const newPathIndex = level <= 5 ? 0 : level <= 10 ? 1 : 2;
-      if ((level % 5 === 0) && towers.length > 0) {
+      // Clear towers AFTER boss waves so players can use them FOR the boss fight
+      if (isBossWave && towers.length > 0) {
         let refundTotal = 0;
         towers.forEach(t => {
           refundTotal += t.baseCost;
@@ -1719,7 +1715,7 @@ function update() {
         towers.length = 0;
         selectedTower = null;
         document.getElementById("selectedTowerPanel").style.display = "none";
-        showMessage(`🔄 Tower maintenance! All towers cleared. +$${Math.floor(refundTotal)} refund`, "#fbbf24");
+        showMessage(`🔄 Preparing for next region! Towers cleared. +$${Math.floor(refundTotal)} refund`, "#fbbf24");
       }
       
       updatePath();
