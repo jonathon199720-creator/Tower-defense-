@@ -895,6 +895,7 @@ const TOWER_TYPES = [
 
 // Multiple paths
 const PATHS = [
+  // Individual paths that will be combined
   [
     { x: 450, y: -20 },
     { x: 450, y: 100 },
@@ -926,10 +927,54 @@ const PATHS = [
     { x: 300, y: 450 },
     { x: 650, y: 450 },
     { x: 650, y: 650 }
+  ],
+  [
+    { x: 600, y: -20 },
+    { x: 600, y: 200 },
+    { x: 250, y: 200 },
+    { x: 250, y: 120 },
+    { x: 750, y: 120 },
+    { x: 750, y: 380 },
+    { x: 150, y: 380 },
+    { x: 150, y: 650 }
+  ],
+  [
+    { x: 300, y: -20 },
+    { x: 300, y: 160 },
+    { x: 700, y: 160 },
+    { x: 700, y: 220 },
+    { x: 200, y: 220 },
+    { x: 200, y: 380 },
+    { x: 650, y: 380 },
+    { x: 650, y: 650 }
+  ],
+  [
+    { x: 150, y: -20 },
+    { x: 150, y: 140 },
+    { x: 550, y: 140 },
+    { x: 550, y: 280 },
+    { x: 350, y: 280 },
+    { x: 350, y: 100 },
+    { x: 800, y: 100 },
+    { x: 800, y: 450 },
+    { x: 400, y: 450 },
+    { x: 400, y: 650 }
   ]
 ];
 
+// Dual path combinations - infinite combinations of two paths
+const DUAL_PATHS = [];
+for (let i = 0; i < 20; i++) {
+  const path1Index = i % PATHS.length;
+  const path2Index = (i + 1) % PATHS.length;
+  DUAL_PATHS.push({
+    path1: PATHS[path1Index],
+    path2: PATHS[path2Index]
+  });
+}
+
 let currentPath = PATHS[0];
+let currentDualPath = DUAL_PATHS[0];
 let lastPathIndex = 0;
 
 // Enemy types
@@ -1016,7 +1061,7 @@ function loadGame() {
 }
 
 function updatePath() {
-  const newPathIndex = level <= 5 ? 0 : level <= 10 ? 1 : 2;
+  const newPathIndex = Math.floor((level - 1) / 5) % DUAL_PATHS.length;
   if (newPathIndex !== lastPathIndex) {
     if (towers.length > 0) {
       let refundTotal = 0;
@@ -1031,7 +1076,8 @@ function updatePath() {
     }
     lastPathIndex = newPathIndex;
   }
-  currentPath = PATHS[newPathIndex];
+  currentDualPath = DUAL_PATHS[newPathIndex];
+  currentPath = currentDualPath.path1;
 }
 
 // ========================
@@ -1078,6 +1124,8 @@ function triggerBossWarning() {
     warning.style.display = "none";
     canvas.classList.remove("boss-incoming");
     badge.classList.remove("active");
+    // Auto-start the boss wave
+    startWave();
   }, 3000);
 }
 
@@ -1229,7 +1277,7 @@ function sellTower() {
 // ========================
 // ENEMY MANAGEMENT
 // ========================
-function spawnEnemy(isBoss = false) {
+function spawnEnemy(isBoss = false, pathToUse = null) {
   let typeIndex;
   let type;
   
@@ -1244,9 +1292,12 @@ function spawnEnemy(isBoss = false) {
   const baseHp = isBoss ? (120 + level * 35) : (38 + level * 17);
   const hp = baseHp * type.hpMult;
   
+  // Use provided path or default to currentPath
+  const path = pathToUse || currentPath;
+  
   enemies.push({
-    x: currentPath[0].x,
-    y: currentPath[0].y,
+    x: path[0].x,
+    y: path[0].y,
     hp: hp,
     maxHp: hp,
     speed: (1.5 + level * 0.1) * type.speedMult,
@@ -1257,7 +1308,8 @@ function spawnEnemy(isBoss = false) {
     typeName: type.name,
     rewardMult: type.rewardMult,
     isBoss: isBoss,
-    damageDealtPerFrame: isBoss ? 0.5 : 0.2
+    damageDealtPerFrame: isBoss ? 0.5 : 0.2,
+    path: path
   });
 }
 
@@ -1346,7 +1398,9 @@ function startWave() {
       if (isBossThis && count === 0) {
         spawnEnemy(true);
       } else {
-        spawnEnemy(false);
+        // Alternate between path1 and path2 for normal waves
+        const pathToUse = count % 2 === 0 ? currentDualPath.path1 : currentDualPath.path2;
+        spawnEnemy(false, pathToUse);
       }
       waveHasSpawned = true;
       count++;
@@ -1383,6 +1437,7 @@ function resetGame() {
     document.querySelectorAll(".tower-info").forEach(el => el.classList.remove("selected"));
     document.getElementById("selectedTowerPanel").style.display = "none";
     currentPath = PATHS[0];
+    currentDualPath = DUAL_PATHS[0];
     localStorage.removeItem('nexusDefense');
     showMessage("🔄 Game reset!", "#3b82f6");
   }
@@ -1410,21 +1465,39 @@ function update() {
     ctx.stroke();
   }
 
-  // Draw enemy path
+  // Draw both enemy paths
+  // Draw path 1
   ctx.strokeStyle = "rgba(59, 130, 246, 0.4)";
   ctx.lineWidth = 4;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.beginPath();
-  ctx.moveTo(currentPath[0].x, currentPath[0].y);
-  for (let i = 1; i < currentPath.length; i++) {
-    ctx.lineTo(currentPath[i].x, currentPath[i].y);
+  ctx.moveTo(currentDualPath.path1[0].x, currentDualPath.path1[0].y);
+  for (let i = 1; i < currentDualPath.path1.length; i++) {
+    ctx.lineTo(currentDualPath.path1[i].x, currentDualPath.path1[i].y);
   }
   ctx.stroke();
 
-  // Draw path nodes
+  // Draw path 2
+  ctx.strokeStyle = "rgba(168, 85, 247, 0.4)";
+  ctx.beginPath();
+  ctx.moveTo(currentDualPath.path2[0].x, currentDualPath.path2[0].y);
+  for (let i = 1; i < currentDualPath.path2.length; i++) {
+    ctx.lineTo(currentDualPath.path2[i].x, currentDualPath.path2[i].y);
+  }
+  ctx.stroke();
+
+  // Draw path 1 nodes
   ctx.fillStyle = "rgba(59, 130, 246, 0.6)";
-  currentPath.forEach(point => {
+  currentDualPath.path1.forEach(point => {
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Draw path 2 nodes
+  ctx.fillStyle = "rgba(168, 85, 247, 0.6)";
+  currentDualPath.path2.forEach(point => {
     ctx.beginPath();
     ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
     ctx.fill();
@@ -1535,9 +1608,10 @@ function update() {
 
     // Update and draw enemies
     enemies.forEach((e, i) => {
-      if (e.pathIndex < currentPath.length - 1) {
-        const current = currentPath[e.pathIndex];
-        const next = currentPath[e.pathIndex + 1];
+      const path = e.path || currentPath;
+      if (e.pathIndex < path.length - 1) {
+        const current = path[e.pathIndex];
+        const next = path[e.pathIndex + 1];
         
         const dx = next.x - current.x;
         const dy = next.y - current.y;
@@ -1553,7 +1627,7 @@ function update() {
           e.y = current.y + dy * e.progress;
         }
       } else {
-        e.y = currentPath[currentPath.length - 1].y;
+        e.y = path[path.length - 1].y;
       }
 
       // Draw enemy
@@ -1755,6 +1829,7 @@ function update() {
 
 if (!loadGame()) {
   currentPath = PATHS[0];
+  currentDualPath = DUAL_PATHS[0];
 }
 
 update();
