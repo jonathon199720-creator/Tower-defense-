@@ -764,9 +764,9 @@ touch-action: none;
 
 ```
 <div class="controls">
-  <button id="towerBtn0" onclick="selectTower(0)">🔵 Laser ($150)</button>
-  <button id="towerBtn1" onclick="selectTower(1)">🔶 Cannon ($200)</button>
-  <button id="towerBtn2" onclick="selectTower(2)">🟢 Pulse ($180)</button>
+  <button id="towerBtn0" onclick="selectTower(0)">🔵 Laser ($200)</button>
+  <button id="towerBtn1" onclick="selectTower(1)">🔶 Cannon ($280)</button>
+  <button id="towerBtn2" onclick="selectTower(2)">🟢 Pulse ($240)</button>
   <button id="pauseBtn" onclick="togglePause()">⏸ PAUSE</button>
   <button id="startBtn" onclick="startWave()">▶ WAVE</button>
   <button onclick="resetGame()" style="background: linear-gradient(135deg, #dc2626, #991b1b); border-color: #fca5a5;">🔄 RESET</button>
@@ -814,17 +814,17 @@ touch-action: none;
   <div class="tower-info" id="info0">
     <div class="tower-name">⚡ Laser</div>
     <div class="tower-stat">DMG: 12 | Range: 120</div>
-    <div class="tower-stat">Speed: Fast | Cost: $150</div>
+    <div class="tower-stat">Speed: Fast | Cost: $200</div>
   </div>
   <div class="tower-info" id="info1">
     <div class="tower-name">💣 Cannon</div>
     <div class="tower-stat">DMG: 20 | Range: 150</div>
-    <div class="tower-stat">Speed: Slow | Cost: $200</div>
+    <div class="tower-stat">Speed: Slow | Cost: $280</div>
   </div>
   <div class="tower-info" id="info2">
     <div class="tower-name">〰 Pulse</div>
     <div class="tower-stat">DMG: 8 | Range: 160</div>
-    <div class="tower-stat">Speed: Medium | Cost: $180</div>
+    <div class="tower-stat">Speed: Medium | Cost: $240</div>
   </div>
 </div>
 
@@ -880,9 +880,9 @@ const particles = [];
 
 // Tower definitions
 const TOWER_TYPES = [
-  { name: "Laser", cost: 150, color: "#00bfff", damage: 12, range: 120, fireRate: 40, size: 14 },
-  { name: "Cannon", cost: 200, color: "#ff8c00", damage: 20, range: 150, fireRate: 60, size: 16 },
-  { name: "Pulse", cost: 180, color: "#00ff88", damage: 8, range: 160, fireRate: 25, size: 15 }
+  { name: "Laser", cost: 200, color: "#00bfff", damage: 12, range: 120, fireRate: 40, size: 14 },
+  { name: "Cannon", cost: 280, color: "#ff8c00", damage: 20, range: 150, fireRate: 60, size: 16 },
+  { name: "Pulse", cost: 240, color: "#00ff88", damage: 8, range: 160, fireRate: 25, size: 15 }
 ];
 
 // Multiple paths
@@ -1069,6 +1069,7 @@ function triggerBossWarning() {
   setTimeout(() => {
     warning.style.display = "none";
     canvas.classList.remove("boss-incoming");
+    badge.classList.remove("active");
   }, 3000);
 }
 
@@ -1232,7 +1233,7 @@ function spawnEnemy(isBoss = false) {
     type = ENEMY_TYPES[typeIndex];
   }
   
-  const baseHp = isBoss ? (100 + level * 30) : (30 + level * 15);
+  const baseHp = isBoss ? (150 + level * 40) : (50 + level * 20);
   const hp = baseHp * type.hpMult;
   
   enemies.push({
@@ -1329,7 +1330,7 @@ function startWave() {
   document.getElementById("startBtn").disabled = true;
   
   let count = 0;
-  const enemyCount = isBossWave ? 8 : (5 + level * 2);
+  const enemyCount = isBossWave ? 12 : (8 + Math.floor(level * 2.5));
   const isBossThis = isBossWave;
   
   const spawnInterval = setInterval(() => {
@@ -1632,7 +1633,7 @@ function update() {
       if (e.y > canvas.height) {
         enemies.splice(i, 1);
         enemiesEscaped++;
-        const penalty = e.isBoss ? 500 : 50;
+        const penalty = e.isBoss ? 800 : 100;
         money = Math.max(0, money - penalty);
         if (e.isBoss) {
           showMessage(`👑 Boss escaped! -$${penalty}`, "#ef4444");
@@ -1697,6 +1698,20 @@ function update() {
       saveGame();
       const escapeMsg = enemiesEscaped > 0 ? ` (${enemiesEscaped} escaped)` : "";
       showMessage(`✨ Wave Complete! Level ${level}${escapeMsg}`, "#10b981");
+      
+      // Force clear towers every 5 waves if path update doesn't do it
+      const newPathIndex = level <= 5 ? 0 : level <= 10 ? 1 : 2;
+      if ((level % 5 === 0) && towers.length > 0) {
+        let refundTotal = 0;
+        towers.forEach(t => {
+          refundTotal += t.baseCost;
+        });
+        money += Math.floor(refundTotal);
+        towers.length = 0;
+        selectedTower = null;
+        document.getElementById("selectedTowerPanel").style.display = "none";
+        showMessage(`🔄 Tower maintenance! All towers cleared. +$${Math.floor(refundTotal)} refund`, "#fbbf24");
+      }
       
       updatePath();
     } else if (enemiesEscaped > 2) {
