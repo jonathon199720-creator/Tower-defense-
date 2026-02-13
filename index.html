@@ -1025,7 +1025,7 @@ function saveGame() {
     }))
   };
   localStorage.setItem('nexusDefense', JSON.stringify(gameData));
-
+  
   const saveInd = document.getElementById("saveIndicator");
   saveInd.classList.add("active");
   setTimeout(() => saveInd.classList.remove("active"), 2000);
@@ -1034,14 +1034,14 @@ function saveGame() {
 function loadGame() {
   const saved = localStorage.getItem('nexusDefense');
   if (!saved) return false;
-
+  
   try {
     const gameData = JSON.parse(saved);
     money = gameData.money;
     level = gameData.level;
     totalKills = gameData.totalKills;
     enemiesEscaped = gameData.enemiesEscaped;
-
+    
     towers.length = 0;
     gameData.towers.forEach(tData => {
       const baseLevel = tData.baseLevel || 1;
@@ -1049,7 +1049,7 @@ function loadGame() {
       const baseDamage = Math.floor(TOWER_TYPES[tData.type].damage * scaleFactor);
       const baseRange = Math.floor(TOWER_TYPES[tData.type].range * scaleFactor);
       const baseFireRate = Math.max(10, Math.floor(TOWER_TYPES[tData.type].fireRate / scaleFactor));
-
+      
       towers.push({
         x: tData.x, y: tData.y, type: tData.type,
         color: TOWER_TYPES[tData.type].color,
@@ -1068,7 +1068,7 @@ function loadGame() {
         maxHealth: tData.maxHealth || 100
       });
     });
-
+    
     updatePath();
     isBossWave = (level % 5 === 0);
     showMessage("📂 Game loaded!", "#3b82f6");
@@ -1106,7 +1106,7 @@ function switchTab(tabName) {
   // Hide all tabs
   document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
-
+  
   // Show selected tab
   document.getElementById(tabName + "-tab").classList.add("active");
   event.target.classList.add("active");
@@ -1134,11 +1134,11 @@ function triggerBossWarning() {
   const warning = document.getElementById("bossWarning");
   const canvas = document.getElementById("game");
   const badge = document.getElementById("bossBadge");
-
+  
   warning.style.display = "block";
   canvas.classList.add("boss-incoming");
   badge.classList.add("active");
-
+  
   setTimeout(() => {
     warning.style.display = "none";
     canvas.classList.remove("boss-incoming");
@@ -1165,7 +1165,7 @@ function togglePause() {
 function createTower(x, y, type) {
   const t = TOWER_TYPES[type];
   const scaleFactor = 1 + (Math.floor(level / 5) * 0.15);
-
+  
   towers.push({
     x, y, type,
     color: t.color,
@@ -1195,7 +1195,7 @@ function selectTower(type) {
   placingTower = true;
   selectedTower = null;
   document.getElementById("selectedTowerPanel").style.display = "none";
-
+  
   document.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
   document.getElementById(`towerBtn${type}`).classList.add("active");
   document.getElementById(`info${type}`).classList.add("selected");
@@ -1211,7 +1211,7 @@ function selectTowerOnCanvas(tower) {
   `;
   document.getElementById("selectedTowerHealthText").textContent = `Health: ${tower.health}/${tower.maxHealth}`;
   document.getElementById("selectedTowerHealth").style.width = (tower.health / tower.maxHealth * 100) + "%";
-
+  
   // Switch to tower tab
   document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
@@ -1223,7 +1223,7 @@ function closeTowerPanel() {
   selectedTower = null;
   document.getElementById("selectedTowerPanel").style.display = "none";
   document.getElementById("noTowerMessage").style.display = "block";
-
+  
   // Switch back to stats tab
   document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
@@ -1299,7 +1299,7 @@ function sellTower() {
 function spawnEnemy(isBoss = false, pathToUse = null) {
   let typeIndex;
   let type;
-
+  
   if (isBoss) {
     typeIndex = 3;
     type = ENEMY_TYPES[3];
@@ -1307,13 +1307,13 @@ function spawnEnemy(isBoss = false, pathToUse = null) {
     typeIndex = Math.floor(Math.random() * Math.min(3, Math.floor(level / 2) + 1));
     type = ENEMY_TYPES[typeIndex];
   }
-
+  
   const baseHp = isBoss ? (120 + level * 35) : (38 + level * 17);
   const hp = baseHp * type.hpMult;
-
+  
   // Use provided path or default to currentPath
   const path = pathToUse || currentPath;
-
+  
   enemies.push({
     x: path[0].x,
     y: path[0].y,
@@ -1360,7 +1360,7 @@ canvas.addEventListener("click", (e) => {
     const scaleY = canvas.height / rect.height;
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
-
+    
     for (const tower of towers) {
       if (distance(x, y, tower.x, tower.y) < 25) {
         selectTowerOnCanvas(tower);
@@ -1369,14 +1369,14 @@ canvas.addEventListener("click", (e) => {
     }
     return;
   }
-
+  
   const rect = canvas.getBoundingClientRect();
   // Scale click coordinates from displayed size to actual canvas resolution
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
   const x = (e.clientX - rect.left) * scaleX;
   const y = (e.clientY - rect.top) * scaleY;
-
+  
   const cost = TOWER_TYPES[selectedTowerType].cost;
   if (money >= cost) {
     createTower(x, y, selectedTowerType);
@@ -1396,22 +1396,22 @@ canvas.addEventListener("click", (e) => {
 // ========================
 function startWave() {
   if (waveActive) return;
-
+  
   isBossWave = (level % 5 === 0);
-
+  
   if (isBossWave && !bossWarningTriggered) {
     return;
   }
-
+  
   waveActive = true;
   waveHasSpawned = false;
   enemiesEscaped = 0;
   document.getElementById("startBtn").disabled = true;
-
+  
   let count = 0;
   const enemyCount = isBossWave ? 10 : (6 + Math.floor(level * 2.2));
   const isBossThis = isBossWave;
-
+  
   const spawnInterval = setInterval(() => {
     if (!isPaused) {
       if (isBossThis && count === 0) {
@@ -1551,32 +1551,11 @@ function update() {
         }
       });
 
-      // Draw tower with better styling
-      // Draw base
-      ctx.fillStyle = t.color;
-      ctx.beginPath();
-      ctx.arc(t.x, t.y, t.size, 0, Math.PI * 2);
-      ctx.fill();
       // Draw tower with SVG graphics
       const towerSvgNames = ['tower_laser', 'tower_cannon', 'tower_pulse'];
       const svgName = towerSvgNames[t.type];
       const svgImg = svgImages[svgName];
-
-      // Draw tower highlight
-      ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-      ctx.beginPath();
-      ctx.arc(t.x - t.size/3, t.y - t.size/3, t.size/3, 0, Math.PI * 2);
-      ctx.fill();
       
-      // Draw tower type indicator
-      ctx.fillStyle = "white";
-      ctx.font = `bold ${t.size}px Arial`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      if (t.type === 0) {
-        ctx.fillText("⚡", t.x, t.y);
-      } else if (t.type === 1) {
-        ctx.fillText("💣", t.x, t.y);
       if (svgImg && svgImg.complete) {
         ctx.save();
         ctx.globalAlpha = 0.95;
@@ -1584,7 +1563,6 @@ function update() {
         ctx.drawImage(svgImg, t.x - size/2, t.y - size/2, size, size);
         ctx.restore();
       } else {
-        ctx.fillText("〰", t.x, t.y);
         // Fallback if SVG not loaded
         ctx.fillStyle = t.color;
         ctx.beginPath();
@@ -1595,7 +1573,7 @@ function update() {
         ctx.arc(t.x - t.size/3, t.y - t.size/3, t.size/3, 0, Math.PI * 2);
         ctx.fill();
       }
-
+      
       // Draw health bar if damaged
       if (t.health < t.maxHealth) {
         ctx.fillStyle = "rgba(0,0,0,0.7)";
@@ -1604,7 +1582,7 @@ function update() {
         ctx.fillStyle = healthPercent > 0.5 ? "#10b981" : healthPercent > 0.2 ? "#f59e0b" : "#ef4444";
         ctx.fillRect(t.x - 18, t.y - 28, 36 * healthPercent, 3);
       }
-
+      
       // Destroy if health reaches 0
       if (t.health <= 0) {
         towers.splice(towers.indexOf(t), 1);
@@ -1612,7 +1590,7 @@ function update() {
         showMessage("💥 Tower destroyed!", "#ef4444");
         return;
       }
-
+      
       // Draw glow
       ctx.strokeStyle = t.color;
       ctx.lineWidth = 2;
@@ -1660,13 +1638,13 @@ function update() {
       if (e.pathIndex < path.length - 1) {
         const current = path[e.pathIndex];
         const next = path[e.pathIndex + 1];
-
+        
         const dx = next.x - current.x;
         const dy = next.y - current.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-
+        
         e.progress += e.speed / dist;
-
+        
         if (e.progress >= 1) {
           e.pathIndex++;
           e.progress = 0;
@@ -1678,25 +1656,6 @@ function update() {
         e.y = path[path.length - 1].y;
       }
 
-      // Draw enemy
-      if (e.isBoss) {
-        // Boss - bigger, more threatening
-        ctx.fillStyle = "#ff1744";
-        ctx.beginPath();
-        ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Boss highlight
-        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-        ctx.beginPath();
-        ctx.arc(e.x - e.radius/2, e.y - e.radius/2, e.radius/2, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Boss crown
-        ctx.font = `bold ${e.radius + 8}px Arial`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("👑", e.x, e.y);
       // Draw enemy with SVG graphics
       const enemySvgNames = ['enemy_scout', 'enemy_trooper', 'enemy_tank', 'enemy_boss'];
       const svgName = enemySvgNames[e.type];
@@ -1709,14 +1668,6 @@ function update() {
         ctx.drawImage(enemySvgImg, e.x - size/2, e.y - size/2, size, size);
         ctx.restore();
       } else {
-        // Regular enemies with emoji
-        const colors = {
-          0: "#fbbf24", // Scout - yellow
-          1: "#ef4444", // Trooper - red
-          2: "#8b5cf6"  // Tank - purple
-        };
-        
-        ctx.fillStyle = colors[e.type];
         // Fallback if SVG not loaded
         if (e.isBoss) {
           ctx.fillStyle = "#ff1744";
@@ -1731,24 +1682,6 @@ function update() {
         ctx.beginPath();
         ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
         ctx.fill();
-        
-        // Enemy highlight
-        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-        ctx.beginPath();
-        ctx.arc(e.x - e.radius/2.5, e.y - e.radius/2.5, e.radius/2.5, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Enemy emoji indicator
-        ctx.font = `bold ${e.radius}px Arial`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        if (e.type === 0) {
-          ctx.fillText("👾", e.x, e.y);
-        } else if (e.type === 1) {
-          ctx.fillText("🤖", e.x, e.y);
-        } else {
-          ctx.fillText("⚔", e.x, e.y);
-        }
       }
 
       // Draw glow
@@ -1802,7 +1735,7 @@ function update() {
     ctx.beginPath();
     ctx.arc(selectedTower.x, selectedTower.y, selectedTower.size + 8, 0, Math.PI * 2);
     ctx.stroke();
-
+    
     // Outer glow ring
     ctx.strokeStyle = "rgba(59, 130, 246, 0.3)";
     ctx.lineWidth = 2;
@@ -1851,7 +1784,7 @@ function update() {
       saveGame();
       const escapeMsg = enemiesEscaped > 0 ? ` (${enemiesEscaped} escaped)` : "";
       showMessage(`✨ Wave Complete! Level ${level}${escapeMsg}`, "#10b981");
-
+      
       // Clear towers AFTER boss waves so players can use them FOR the boss fight
       if (isBossWave && towers.length > 0) {
         let refundTotal = 0;
@@ -1864,7 +1797,7 @@ function update() {
         document.getElementById("selectedTowerPanel").style.display = "none";
         showMessage(`🔄 Preparing for next region! Towers cleared. +$${Math.floor(refundTotal)} refund`, "#fbbf24");
       }
-
+      
       updatePath();
     } else if (enemiesEscaped > 2) {
       waveActive = false;
@@ -1885,7 +1818,7 @@ function update() {
   document.getElementById("towersDisplay").textContent = towers.length;
   document.getElementById("killsDisplay").textContent = totalKills;
   document.getElementById("waveIndicator").textContent = `Wave: ${level} | Enemies: ${enemies.length}${enemiesEscaped > 0 ? ` | Escaped: ${enemiesEscaped}` : ''}`;
-
+  
   let difficulty = "Normal";
   if (level <= 3) difficulty = "Easy";
   else if (level <= 7) difficulty = "Normal";
