@@ -534,6 +534,21 @@ animation: bossBadgePulse 0.6s infinite;
 display: inline-block;
 }
 
+.boss-failures-badge {
+position: static;
+background: rgba(239, 68, 68, 0.9);
+color: white;
+padding: 8px 12px;
+border-radius: 4px;
+font-size: 0.9em;
+font-weight: bold;
+display: none;
+}
+
+.boss-failures-badge.active {
+display: inline-block;
+}
+
 .save-indicator {
 position: static;
 background: rgba(16, 185, 129, 0.6);
@@ -576,101 +591,98 @@ body {
 padding: 8px;
 }
 
-```
 h1 {
-  font-size: 1.5em;
-  margin-bottom: 2px;
+font-size: 1.5em;
+margin-bottom: 2px;
 }
 
 .subtitle {
-  font-size: 0.65em;
-  margin-bottom: 10px;
+font-size: 0.65em;
+margin-bottom: 10px;
 }
 
 .container {
-  gap: 8px;
-  flex-direction: column;
+gap: 8px;
+flex-direction: column;
 }
 
 .game-area {
-  gap: 10px;
-  width: 100%;
+gap: 10px;
+width: 100%;
 }
 
 canvas {
-  max-width: 100%;
-  border-width: 1px;
+max-width: 100%;
+border-width: 1px;
 }
 
 .sidebar {
-  max-width: 100%;
-  width: 100%;
-  padding: 0;
-  max-height: 50vh;
+max-width: 100%;
+width: 100%;
+padding: 0;
+max-height: 50vh;
 }
 
 .sidebar-content {
-  padding: 12px;
-  max-height: 40vh;
+padding: 12px;
+max-height: 40vh;
 }
 
 .sidebar-tab {
-  font-size: 10px;
-  padding: 8px 6px;
+font-size: 10px;
+padding: 8px 6px;
 }
 
 .controls {
-  gap: 6px;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+gap: 6px;
+grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
 }
 
 button {
-  padding: 8px 10px;
-  font-size: 11px;
-  border-width: 1px;
+padding: 8px 10px;
+font-size: 11px;
+border-width: 1px;
 }
 
 .stat-group {
-  margin-bottom: 12px;
-  padding-bottom: 10px;
+margin-bottom: 12px;
+padding-bottom: 10px;
 }
 
 .stat-label {
-  font-size: 0.7em;
-  margin-bottom: 3px;
+font-size: 0.7em;
+margin-bottom: 3px;
 }
 
 .stat-value {
-  font-size: 1.3em;
+font-size: 1.3em;
 }
 
 .tower-info {
-  padding: 8px;
-  margin-bottom: 6px;
-  font-size: 0.7em;
+padding: 8px;
+margin-bottom: 6px;
+font-size: 0.7em;
 }
 
 .upgrade-btn {
-  padding: 6px 8px;
-  margin: 3px 0;
-  font-size: 10px;
+padding: 6px 8px;
+margin: 3px 0;
+font-size: 10px;
 }
 
-.wave-indicator, .difficulty-badge, .boss-badge {
-  font-size: 0.8em;
-  padding: 6px 8px;
+.wave-indicator, .difficulty-badge, .boss-badge, .boss-failures-badge {
+font-size: 0.8em;
+padding: 6px 8px;
 }
 
 .pause-status {
-  font-size: 0.8em;
-  padding: 6px 8px;
+font-size: 0.8em;
+padding: 6px 8px;
 }
 
 h1 {
-  letter-spacing: 1px;
+letter-spacing: 1px;
 }
-```
-
 }
 
 @media (max-width: 480px) {
@@ -678,62 +690,59 @@ body {
 padding: 6px;
 }
 
-```
 h1 {
-  font-size: 1.3em;
+font-size: 1.3em;
 }
 
 .subtitle {
-  font-size: 0.6em;
-  margin-bottom: 8px;
+font-size: 0.6em;
+margin-bottom: 8px;
 }
 
 .controls {
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
+grid-template-columns: repeat(3, 1fr);
+gap: 5px;
 }
 
 button {
-  padding: 6px 8px;
-  font-size: 10px;
+padding: 6px 8px;
+font-size: 10px;
 }
 
 .sidebar {
-  padding: 0;
-  max-height: 45vh;
+padding: 0;
+max-height: 45vh;
 }
 
 .sidebar-content {
-  padding: 10px;
-  max-height: 35vh;
+padding: 10px;
+max-height: 35vh;
 }
 
 .sidebar-tab {
-  font-size: 9px;
-  padding: 6px 4px;
+font-size: 9px;
+padding: 6px 4px;
 }
 
 canvas {
-  border-width: 1px;
+border-width: 1px;
 }
 
 .stat-value {
-  font-size: 1.2em;
+font-size: 1.2em;
 }
 
 .tower-info {
-  padding: 7px;
-  margin-bottom: 5px;
-  font-size: 0.65em;
+padding: 7px;
+margin-bottom: 5px;
+font-size: 0.65em;
 }
 
 .upgrade-btn {
-  padding: 5px 7px;
-  margin: 2px 0;
-  font-size: 9px;
+padding: 5px 7px;
+margin: 2px 0;
+font-size: 9px;
 }
-```
-
 }
 
 /* Touch-friendly */
@@ -775,6 +784,7 @@ touch-action: none;
   <div class="pause-status" id="pauseStatus">PAUSED</div>
   <div class="difficulty-badge" id="difficultyBadge">Normal</div>
   <div class="boss-badge" id="bossBadge">👑 BOSS WAVE</div>
+  <div class="boss-failures-badge" id="bossFailuresBadge">⚠️ BOSS FAILURES: 0/3</div>
   <div class="save-indicator" id="saveIndicator">💾 Saved</div>
 </div>
 ```
@@ -810,7 +820,7 @@ touch-action: none;
     </div>
   </div>
   <div style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.6); padding: 8px; border-radius: 4px; font-size: 0.7em; color: #60a5fa;">
-    💡 Bosses every 5 waves • Click towers to upgrade
+    💡 Bosses every 5 waves • Click towers to upgrade • Boss defeats 3 times = GAME RESET
   </div>
 </div>
 
@@ -881,6 +891,7 @@ let waveHasSpawned = false;
 let isBossWave = false;
 let bossIncoming = false;
 let bossWarningTriggered = false;
+let bossFailures = 0;
 
 const towers = [];
 const enemies = [];
@@ -914,7 +925,6 @@ const TOWER_TYPES = [
 
 // Multiple paths
 const PATHS = [
-  // Individual paths that will be combined
   [
     { x: 450, y: -20 },
     { x: 450, y: 100 },
@@ -981,7 +991,7 @@ const PATHS = [
   ]
 ];
 
-// Dual path combinations - infinite combinations of two paths
+// Dual path combinations
 const DUAL_PATHS = [];
 for (let i = 0; i < 20; i++) {
   const path1Index = i % PATHS.length;
@@ -1013,6 +1023,7 @@ function saveGame() {
     level,
     totalKills,
     enemiesEscaped,
+    bossFailures,
     towers: towers.map(t => ({
       x: t.x, y: t.y, type: t.type,
       damageUpgrades: t.damageUpgrades,
@@ -1041,6 +1052,7 @@ function loadGame() {
     level = gameData.level;
     totalKills = gameData.totalKills;
     enemiesEscaped = gameData.enemiesEscaped;
+    bossFailures = gameData.bossFailures || 0;
     
     towers.length = 0;
     gameData.towers.forEach(tData => {
@@ -1103,11 +1115,9 @@ function updatePath() {
 // TAB SWITCHING
 // ========================
 function switchTab(tabName) {
-  // Hide all tabs
   document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
   
-  // Show selected tab
   document.getElementById(tabName + "-tab").classList.add("active");
   event.target.classList.add("active");
 }
@@ -1143,7 +1153,6 @@ function triggerBossWarning() {
     warning.style.display = "none";
     canvas.classList.remove("boss-incoming");
     badge.classList.remove("active");
-    // Auto-start the boss wave
     startWave();
   }, 3000);
 }
@@ -1212,7 +1221,6 @@ function selectTowerOnCanvas(tower) {
   document.getElementById("selectedTowerHealthText").textContent = `Health: ${tower.health}/${tower.maxHealth}`;
   document.getElementById("selectedTowerHealth").style.width = (tower.health / tower.maxHealth * 100) + "%";
   
-  // Switch to tower tab
   document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
   document.getElementById("tower-tab").classList.add("active");
@@ -1224,7 +1232,6 @@ function closeTowerPanel() {
   document.getElementById("selectedTowerPanel").style.display = "none";
   document.getElementById("noTowerMessage").style.display = "block";
   
-  // Switch back to stats tab
   document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
   document.getElementById("stats-tab").classList.add("active");
@@ -1311,7 +1318,6 @@ function spawnEnemy(isBoss = false, pathToUse = null) {
   const baseHp = isBoss ? (120 + level * 35) : (38 + level * 17);
   const hp = baseHp * type.hpMult;
   
-  // Use provided path or default to currentPath
   const path = pathToUse || currentPath;
   
   enemies.push({
@@ -1355,7 +1361,6 @@ function createParticles(x, y, color, count = 8) {
 canvas.addEventListener("click", (e) => {
   if (!placingTower || selectedTowerType === -1) {
     const rect = canvas.getBoundingClientRect();
-    // Scale click coordinates from displayed size to actual canvas resolution
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     const x = (e.clientX - rect.left) * scaleX;
@@ -1371,7 +1376,6 @@ canvas.addEventListener("click", (e) => {
   }
   
   const rect = canvas.getBoundingClientRect();
-  // Scale click coordinates from displayed size to actual canvas resolution
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
   const x = (e.clientX - rect.left) * scaleX;
@@ -1415,14 +1419,10 @@ function startWave() {
   const spawnInterval = setInterval(() => {
     if (!isPaused) {
       if (isBossThis && count === 0) {
-        // Boss only spawns on path1
         spawnEnemy(true, currentDualPath.path1);
       } else {
-        // Path2 only comes in on higher waves (level 11+)
         let pathToUse = currentDualPath.path1;
         if (level >= 11) {
-          // On boss waves: alternate regular enemies between both paths
-          // On normal waves: alternate between both paths
           pathToUse = count % 2 === 0 ? currentDualPath.path1 : currentDualPath.path2;
         }
         spawnEnemy(false, pathToUse);
@@ -1442,6 +1442,7 @@ function resetGame() {
     level = 1;
     totalKills = 0;
     enemiesEscaped = 0;
+    bossFailures = 0;
     waveHasSpawned = false;
     isBossWave = false;
     bossWarningTriggered = false;
@@ -1458,6 +1459,7 @@ function resetGame() {
     document.getElementById("pauseOverlay").classList.remove("active");
     document.getElementById("pauseStatus").classList.remove("active");
     document.getElementById("bossBadge").classList.remove("active");
+    document.getElementById("bossFailuresBadge").classList.remove("active");
     document.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
     document.querySelectorAll(".tower-info").forEach(el => el.classList.remove("selected"));
     document.getElementById("selectedTowerPanel").style.display = "none";
@@ -1474,7 +1476,6 @@ function resetGame() {
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw grid background
   ctx.strokeStyle = "rgba(59, 130, 246, 0.1)";
   ctx.lineWidth = 1;
   for (let x = 0; x < canvas.width; x += 50) {
@@ -1490,8 +1491,6 @@ function update() {
     ctx.stroke();
   }
 
-  // Draw both enemy paths
-  // Draw path 1
   ctx.strokeStyle = "rgba(59, 130, 246, 0.4)";
   ctx.lineWidth = 4;
   ctx.lineCap = "round";
@@ -1503,7 +1502,6 @@ function update() {
   }
   ctx.stroke();
 
-  // Draw path 2 only on higher waves (level 11+)
   if (level >= 11) {
     ctx.strokeStyle = "rgba(168, 85, 247, 0.4)";
     ctx.beginPath();
@@ -1514,7 +1512,6 @@ function update() {
     ctx.stroke();
   }
 
-  // Draw path 1 nodes
   ctx.fillStyle = "rgba(59, 130, 246, 0.6)";
   currentDualPath.path1.forEach(point => {
     ctx.beginPath();
@@ -1522,7 +1519,6 @@ function update() {
     ctx.fill();
   });
 
-  // Draw path 2 nodes only on higher waves (level 11+)
   if (level >= 11) {
     ctx.fillStyle = "rgba(168, 85, 247, 0.6)";
     currentDualPath.path2.forEach(point => {
@@ -1532,7 +1528,6 @@ function update() {
     });
   }
 
-  // Boss warning check
   if (isBossWave && !bossWarningTriggered && !waveActive) {
     triggerBossWarning();
     bossWarningTriggered = true;
@@ -1540,9 +1535,7 @@ function update() {
   }
 
   if (!isPaused) {
-    // Update and draw towers
     towers.forEach((t) => {
-      // Take damage from nearby enemies
       enemies.forEach(e => {
         const dist = distance(t.x, t.y, e.x, e.y);
         if (dist < 40) {
@@ -1551,7 +1544,6 @@ function update() {
         }
       });
 
-      // Draw tower with SVG graphics
       const towerSvgNames = ['tower_laser', 'tower_cannon', 'tower_pulse'];
       const svgName = towerSvgNames[t.type];
       const svgImg = svgImages[svgName];
@@ -1563,7 +1555,6 @@ function update() {
         ctx.drawImage(svgImg, t.x - size/2, t.y - size/2, size, size);
         ctx.restore();
       } else {
-        // Fallback if SVG not loaded
         ctx.fillStyle = t.color;
         ctx.beginPath();
         ctx.arc(t.x, t.y, t.size, 0, Math.PI * 2);
@@ -1574,7 +1565,6 @@ function update() {
         ctx.fill();
       }
       
-      // Draw health bar if damaged
       if (t.health < t.maxHealth) {
         ctx.fillStyle = "rgba(0,0,0,0.7)";
         ctx.fillRect(t.x - 18, t.y - 28, 36, 3);
@@ -1583,7 +1573,6 @@ function update() {
         ctx.fillRect(t.x - 18, t.y - 28, 36 * healthPercent, 3);
       }
       
-      // Destroy if health reaches 0
       if (t.health <= 0) {
         towers.splice(towers.indexOf(t), 1);
         createParticles(t.x, t.y, t.color, 20);
@@ -1591,7 +1580,6 @@ function update() {
         return;
       }
       
-      // Draw glow
       ctx.strokeStyle = t.color;
       ctx.lineWidth = 2;
       ctx.globalAlpha = 0.3;
@@ -1600,7 +1588,6 @@ function update() {
       ctx.stroke();
       ctx.globalAlpha = 1;
 
-      // Shooting logic
       if (t.cooldown > 0) {
         t.cooldown--;
       } else {
@@ -1632,7 +1619,6 @@ function update() {
       }
     });
 
-    // Update and draw enemies
     enemies.forEach((e, i) => {
       const path = e.path || currentPath;
       if (e.pathIndex < path.length - 1) {
@@ -1656,7 +1642,6 @@ function update() {
         e.y = path[path.length - 1].y;
       }
 
-      // Draw enemy with SVG graphics
       const enemySvgNames = ['enemy_scout', 'enemy_trooper', 'enemy_tank', 'enemy_boss'];
       const svgName = enemySvgNames[e.type];
       const enemySvgImg = svgImages[svgName];
@@ -1668,14 +1653,13 @@ function update() {
         ctx.drawImage(enemySvgImg, e.x - size/2, e.y - size/2, size, size);
         ctx.restore();
       } else {
-        // Fallback if SVG not loaded
         if (e.isBoss) {
           ctx.fillStyle = "#ff1744";
         } else {
           const colors = {
-            0: "#fbbf24", // Scout - yellow
-            1: "#ef4444", // Trooper - red
-            2: "#8b5cf6"  // Tank - purple
+            0: "#fbbf24",
+            1: "#ef4444",
+            2: "#8b5cf6"
           };
           ctx.fillStyle = colors[e.type];
         }
@@ -1684,7 +1668,6 @@ function update() {
         ctx.fill();
       }
 
-      // Draw glow
       ctx.strokeStyle = e.isBoss ? "#ff6b6b" : (e.type === 0 ? "#f59e0b" : e.type === 1 ? "#ff6b6b" : "#a78bfa");
       ctx.lineWidth = 1;
       ctx.globalAlpha = 0.5;
@@ -1693,14 +1676,12 @@ function update() {
       ctx.stroke();
       ctx.globalAlpha = 1;
 
-      // HP bar
       ctx.fillStyle = "rgba(0,0,0,0.7)";
       ctx.fillRect(e.x - 20, e.y - 25, 40, 5);
       const hpPercent = e.hp / e.maxHp;
       ctx.fillStyle = hpPercent > 0.5 ? "#22c55e" : hpPercent > 0.2 ? "#f59e0b" : "#ef4444";
       ctx.fillRect(e.x - 20, e.y - 25, 40 * hpPercent, 5);
 
-      // Remove if dead
       if (e.hp <= 0) {
         enemies.splice(i, 1);
         money += Math.floor(25 * e.rewardMult);
@@ -1712,23 +1693,38 @@ function update() {
         return;
       }
 
-      // Remove if escaped
       if (e.y > canvas.height) {
         enemies.splice(i, 1);
-        enemiesEscaped++;
-        const penalty = e.isBoss ? 800 : 50;
-        money = Math.max(0, money - penalty);
+        
         if (e.isBoss) {
-          showMessage(`👑 Boss escaped! -$${penalty}`, "#ef4444");
+          // BOSS ESCAPED - FAIL WAVE
+          bossFailures++;
+          
+          if (bossFailures >= 3) {
+            // RESET ON 3RD FAILURE
+            showMessage(`💀 BOSS DEFEATED YOU 3 TIMES! GAME RESET!`, "#ff1744");
+            resetGame();
+            return;
+          }
+          
+          waveActive = false;
+          waveHasSpawned = false;
+          document.getElementById("startBtn").disabled = false;
+          showMessage(`👑 Boss escaped! (${bossFailures}/3) - Retry the wave`, "#ef4444");
+          document.getElementById("bossFailuresBadge").classList.add("active");
+          
+          createParticles(e.x, e.y, "#ef4444", 20);
+        } else {
+          enemiesEscaped++;
+          const penalty = 50;
+          money = Math.max(0, money - penalty);
+          createParticles(e.x, e.y, "#ef4444", 10);
         }
-        createParticles(e.x, e.y, "#ef4444", 10);
       }
     });
   }
 
-  // Draw selected tower highlight
   if (selectedTower) {
-    // Pulsing selection glow
     ctx.strokeStyle = "#3b82f6";
     ctx.lineWidth = 3;
     ctx.globalAlpha = 0.8;
@@ -1736,7 +1732,6 @@ function update() {
     ctx.arc(selectedTower.x, selectedTower.y, selectedTower.size + 8, 0, Math.PI * 2);
     ctx.stroke();
     
-    // Outer glow ring
     ctx.strokeStyle = "rgba(59, 130, 246, 0.3)";
     ctx.lineWidth = 2;
     ctx.globalAlpha = 0.5;
@@ -1746,7 +1741,6 @@ function update() {
     ctx.globalAlpha = 1;
   }
 
-  // Update and draw particles
   particles.forEach((p, i) => {
     p.x += p.vx;
     p.y += p.vy;
@@ -1767,11 +1761,43 @@ function update() {
 
   // Wave complete logic
   if (waveActive && waveHasSpawned && enemies.length === 0) {
-    if (enemiesEscaped <= 2) {
+    if (isBossWave) {
+      // BOSS WAVE - only complete if boss was defeated (not escaped)
+      // If we get here, boss was defeated!
+      waveActive = false;
+      waveHasSpawned = false;
+      bossFailures = 0; // Reset failures on boss victory
+      level++;
+      bossWarningTriggered = false;
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("pauseBtn").textContent = "⏸ PAUSE";
+      isPaused = false;
+      document.getElementById("pauseOverlay").classList.remove("active");
+      document.getElementById("pauseStatus").classList.remove("active");
+      document.getElementById("bossBadge").classList.remove("active");
+      document.getElementById("bossFailuresBadge").classList.remove("active");
+      saveGame();
+      showMessage(`👑 BOSS DEFEATED! +$${Math.floor(money * 0.1)} bonus!`, "#fbbf24");
+      money += Math.floor(money * 0.1);
+      
+      if (towers.length > 0) {
+        let refundTotal = 0;
+        towers.forEach(t => {
+          refundTotal += t.baseCost;
+        });
+        money += Math.floor(refundTotal);
+        towers.length = 0;
+        selectedTower = null;
+        document.getElementById("selectedTowerPanel").style.display = "none";
+        showMessage(`🔄 Preparing for next region! Towers cleared. +$${Math.floor(refundTotal)} refund`, "#fbbf24");
+      }
+      
+      updatePath();
+    } else if (enemiesEscaped <= 2) {
+      // NORMAL WAVE - complete if not too many escaped
       waveActive = false;
       waveHasSpawned = false;
       level++;
-      // Reset boss warning flag only when reaching a new boss level
       if (level % 5 === 0) {
         bossWarningTriggered = false;
       }
@@ -1785,21 +1811,9 @@ function update() {
       const escapeMsg = enemiesEscaped > 0 ? ` (${enemiesEscaped} escaped)` : "";
       showMessage(`✨ Wave Complete! Level ${level}${escapeMsg}`, "#10b981");
       
-      // Clear towers AFTER boss waves so players can use them FOR the boss fight
-      if (isBossWave && towers.length > 0) {
-        let refundTotal = 0;
-        towers.forEach(t => {
-          refundTotal += t.baseCost;
-        });
-        money += Math.floor(refundTotal);
-        towers.length = 0;
-        selectedTower = null;
-        document.getElementById("selectedTowerPanel").style.display = "none";
-        showMessage(`🔄 Preparing for next region! Towers cleared. +$${Math.floor(refundTotal)} refund`, "#fbbf24");
-      }
-      
       updatePath();
     } else if (enemiesEscaped > 2) {
+      // TOO MANY ESCAPED - FAIL WAVE
       waveActive = false;
       waveHasSpawned = false;
       enemiesEscaped = 0;
@@ -1818,6 +1832,7 @@ function update() {
   document.getElementById("towersDisplay").textContent = towers.length;
   document.getElementById("killsDisplay").textContent = totalKills;
   document.getElementById("waveIndicator").textContent = `Wave: ${level} | Enemies: ${enemies.length}${enemiesEscaped > 0 ? ` | Escaped: ${enemiesEscaped}` : ''}`;
+  document.getElementById("bossFailuresBadge").textContent = `⚠️ BOSS FAILURES: ${bossFailures}/3`;
   
   let difficulty = "Normal";
   if (level <= 3) difficulty = "Easy";
