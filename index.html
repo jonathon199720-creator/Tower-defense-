@@ -371,7 +371,7 @@ function selectType(idx){
   if(money < TOWER_DEFS[idx].cost) return msg("Not enough money!", "#ef4444");
   placing = idx;
   selected = null;
-  document.querySelectorAll("#selPanel").forEach(el=>el.style.display="none");
+  document.getElementById("selPanel").style.display="none";
   document.getElementById("noSelect").style.display="block";
   document.querySelectorAll(".controls button").forEach(b=>b.classList.remove("active"));
   document.getElementById(`btn${idx}`).classList.add("active");
@@ -473,12 +473,10 @@ function spawnLoop(isBossWave){
 
   const spawner = setInterval(()=>{
     if(paused) return;
-    if(isBossWave && spawned === 0){
-      spawnEnemy(true);
-    } else if(spawned < total){
-      spawnEnemy();
+    if(spawned < total){
+      spawnEnemy(isBossWave && spawned === 0);
+      spawned++;
     }
-    spawned++;
     if(spawned >= total) clearInterval(spawner);
   }, interval);
 }
@@ -783,6 +781,9 @@ document.querySelectorAll(".tab-btn").forEach(btn=>{
 document.querySelectorAll("#towers .tower-card").forEach(card=>{
   card.onclick = ()=>selectType(+card.dataset.type);
 });
+
+// start wave button
+document.getElementById("waveBtn").onclick = startWave;
 </script>
 </body>
 </html>
