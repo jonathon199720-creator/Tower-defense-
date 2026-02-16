@@ -892,6 +892,7 @@ let isBossWave = false;
 let bossIncoming = false;
 let bossWarningTriggered = false;
 let bossFailures = 0;
+let bossDefeatedThisWave = false;
 
 const towers = [];
 const enemies = [];
@@ -1402,6 +1403,7 @@ function startWave() {
   if (waveActive) return;
   
   isBossWave = (level % 5 === 0);
+  bossDefeatedThisWave = false; // Reset flag for new wave
   
   if (isBossWave && !bossWarningTriggered) {
     return;
@@ -1443,6 +1445,7 @@ function resetGame() {
     totalKills = 0;
     enemiesEscaped = 0;
     bossFailures = 0;
+    bossDefeatedThisWave = false;
     waveHasSpawned = false;
     isBossWave = false;
     bossWarningTriggered = false;
@@ -1687,6 +1690,7 @@ function update() {
         money += Math.floor(25 * e.rewardMult);
         totalKills++;
         if (e.isBoss) {
+          bossDefeatedThisWave = true;
           showMessage(`👑 Boss defeated! +$${Math.floor(25 * e.rewardMult)}`, "#fbbf24");
         }
         createParticles(e.x, e.y, "#fbbf24", 15);
@@ -1762,11 +1766,17 @@ function update() {
   // Wave complete logic
   if (waveActive && waveHasSpawned && enemies.length === 0) {
     if (isBossWave) {
-      // BOSS WAVE - only complete if boss was defeated (not escaped)
-      // If we get here, boss was defeated!
+      // BOSS WAVE - only complete if boss was ACTUALLY defeated (not escaped)
+      if (!bossDefeatedThisWave) {
+        // Boss escaped, don't complete wave
+        return;
+      }
+      
+      // Boss was defeated!
       waveActive = false;
       waveHasSpawned = false;
       bossFailures = 0; // Reset failures on boss victory
+      bossDefeatedThisWave = false; // Reset flag
       level++;
       bossWarningTriggered = false;
       document.getElementById("startBtn").disabled = false;
